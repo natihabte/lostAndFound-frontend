@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Switching Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-card h2 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status.pass {
+            background: #10b981;
+            color: white;
+        }
+        .status.fail {
+            background: #ef4444;
+            color: white;
+        }
+        .status.pending {
+            background: #f59e0b;
+            color: white;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .code {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .checklist li.checked:before {
+            content: "✅ ";
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Language Switching Test Guide</h1>
+    
+    <div class="test-card">
+        <h2>📋 Pre-Test Checklist</h2>
+        <ul class="checklist">
+            <li>Development server is running (npm start)</li>
+            <li>Browser is open to http://localhost:3000</li>
+            <li>Browser console is open (F12)</li>
+            <li>No existing errors in console</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test 1: Basic Language Switch</h2>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>Look for the Globe icon (🌐) in the header</li>
+            <li>Click the Globe icon to open language selector</li>
+            <li>Select "አማርኛ" (Amharic)</li>
+            <li>Page should reload automatically</li>
+            <li>All text should now be in Amharic</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ Page reloads</li>
+            <li>✅ All UI text changes to Amharic</li>
+            <li>✅ Console shows: "✅ Language changed to: am"</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test 2: Language Persistence</h2>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>After changing language to Amharic (from Test 1)</li>
+            <li>Refresh the page (F5 or Ctrl+R)</li>
+            <li>Check if language is still Amharic</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ Language remains Amharic after refresh</li>
+            <li>✅ No reset to English</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test 3: All Languages</h2>
+        <p><strong>Test each language:</strong></p>
+        <button onclick="testLanguage('en')">Test English</button>
+        <button onclick="testLanguage('am')">Test አማርኛ</button>
+        <button onclick="testLanguage('om')">Test Oromoo</button>
+        <button onclick="testLanguage('ti')">Test ትግርኛ</button>
+        <p><strong>For each language, verify:</strong></p>
+        <ul>
+            <li>✅ Page reloads</li>
+            <li>✅ All text updates</li>
+            <li>✅ Language selector shows correct current language</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test 4: Console Verification</h2>
+        <p><strong>Run these commands in browser console:</strong></p>
+        <div class="code">
+// Check current language<br>
+console.log('Current:', i18n.language);<br>
+<br>
+// Check localStorage<br>
+console.log('Stored:', localStorage.getItem('i18nextLng'));<br>
+<br>
+// Test translation<br>
+console.log('Home:', i18n.t('navigation.home'));<br>
+console.log('Login:', i18n.t('navigation.login'));
+        </div>
+        <p><strong>Expected Output:</strong></p>
+        <ul>
+            <li>Current language code (e.g., "am", "en")</li>
+            <li>Same language code in localStorage</li>
+            <li>Translated text in selected language</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Test 5: Component Updates</h2>
+        <p><strong>Check these components update:</strong></p>
+        <ul class="checklist">
+            <li>Header navigation links</li>
+            <li>Search bar placeholder text</li>
+            <li>Button labels</li>
+            <li>Category names</li>
+            <li>Status labels (Lost/Found)</li>
+            <li>Footer text</li>
+            <li>Form labels</li>
+            <li>Error messages</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>🐛 Troubleshooting</h2>
+        <p><strong>If language doesn't change:</strong></p>
+        <ol>
+            <li>Clear browser cache and localStorage:
+                <div class="code">
+localStorage.clear();<br>
+location.reload();
+                </div>
+            </li>
+            <li>Check for console errors</li>
+            <li>Verify translation files exist in <code>src/i18n/locales/</code></li>
+            <li>Ensure all components use <code>useTranslation()</code> hook</li>
+        </ol>
+        
+        <p><strong>If page doesn't reload:</strong></p>
+        <ol>
+            <li>Check InlineLanguageSelector.jsx has <code>window.location.reload()</code></li>
+            <li>Check browser console for JavaScript errors</li>
+            <li>Try manual reload after language change</li>
+        </ol>
+    </div>
+
+    <div class="test-card">
+        <h2>✅ Success Criteria</h2>
+        <p>All tests pass when:</p>
+        <ul class="checklist">
+            <li>Language selector opens and closes properly</li>
+            <li>Clicking a language triggers page reload</li>
+            <li>All UI text updates to selected language</li>
+            <li>Language persists after page refresh</li>
+            <li>No console errors</li>
+            <li>All 4 languages work correctly</li>
+            <li>Language selector shows current language</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>📊 Test Results</h2>
+        <p>Record your test results:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Test</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Notes</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Basic Language Switch</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span class="status pending">PENDING</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Language Persistence</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span class="status pending">PENDING</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">All Languages</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span class="status pending">PENDING</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Console Verification</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span class="status pending">PENDING</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Component Updates</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><span class="status pending">PENDING</span></td>
+                <td style="padding: 10px; border: 1px solid #ddd;"></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function testLanguage(code) {
+            const names = {
+                'en': 'English',
+                'am': 'አማርኛ (Amharic)',
+                'om': 'Afaan Oromoo',
+                'ti': 'ትግርኛ (Tigrinya)'
+            };
+            alert(`To test ${names[code]}:\n\n1. Go to your application\n2. Click the Globe icon (🌐)\n3. Select "${names[code]}"\n4. Verify page reloads and text updates\n5. Check console for: "✅ Language changed to: ${code}"`);
+        }
+    </script>
+</body>
+</html>

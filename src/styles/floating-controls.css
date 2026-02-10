@@ -1,0 +1,100 @@
+/* Floating Controls Animations */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-in {
+  animation: slideInFromBottom 0.2s ease-out;
+}
+
+.slide-in-from-bottom-2 {
+  animation: slideInFromBottom 0.2s ease-out;
+}
+
+.floating-control-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-control-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.floating-control-button:active {
+  transform: translateY(0);
+}
+
+.floating-main-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-main-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.floating-main-button.expanded {
+  transform: rotate(180deg);
+}
+
+.floating-indicator {
+  transition: all 0.2s ease-in-out;
+}
+
+.floating-indicator:hover {
+  transform: scale(1.1);
+}
+
+/* Backdrop blur for language menu */
+.language-menu-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth transitions for all floating elements */
+.floating-controls * {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .floating-controls {
+    bottom: 1rem;
+    right: 1rem;
+  }
+  
+  .floating-control-button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .floating-main-button {
+    width: 3rem;
+    height: 3rem;
+  }
+}
