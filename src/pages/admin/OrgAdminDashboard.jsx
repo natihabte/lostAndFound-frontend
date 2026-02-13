@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Package, CheckCircle, ClipboardCheck, TrendingUp, UserCheck, Activity } from 'lucide-react';
+import { Users, Package, CheckCircle, ClipboardCheck, TrendingUp, UserCheck, Activity, LayoutDashboard, AlertCircle } from 'lucide-react';
 
 const OrgAdminDashboard = ({ darkMode, currentUser }) => {
   const { t } = useTranslation();
@@ -355,10 +355,10 @@ const OrgAdminDashboard = ({ darkMode, currentUser }) => {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8">
               {[
-                { id: 'overview', name: 'Overview' },
-                { id: 'pending-items', name: 'Pending Items', count: pendingItems.length },
-                { id: 'pending-claims', name: 'Pending Claims', count: pendingClaims.length },
-                { id: 'users', name: 'Users' }
+                { id: 'overview', name: 'Overview', icon: LayoutDashboard },
+                { id: 'pending-items', name: 'Pending Items', count: pendingItems.length, icon: Package },
+                { id: 'pending-claims', name: 'Pending Claims', count: pendingClaims.length, icon: AlertCircle },
+                { id: 'users', name: 'Users', icon: Users }
               ].map(tab => (
                 <button
                   key={tab.id}

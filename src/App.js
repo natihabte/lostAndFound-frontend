@@ -1500,7 +1500,7 @@ export default function App() {
       )}
       
       {/* Organization Email Verification */}
-      {currentPage === 'verify-organization' && (
+      {currentPage === 'organization-verification' && (
         <OrganizationVerification 
           setCurrentPage={setCurrentPage}
           darkMode={darkMode}

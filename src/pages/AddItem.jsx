@@ -58,7 +58,6 @@ export default function AddItem() {
             <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border rounded-md px-3 py-2">
               <option>Electronic</option>
               <option>Document</option>
-              <option>Pet</option>
               <option>Other</option>
             </select>
           </div>

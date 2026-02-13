@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { 
+  Search, 
+  Building2, 
+  TrendingUp, 
+  Award, 
+  Users,
+  MapPin,
+  Star,
+  CheckCircle,
+  ChevronRight,
+  Grid3x3,
+  List
+} from 'lucide-react';
 
 const OrganizationsDashboard = ({ 
   currentUser, 
@@ -316,7 +328,7 @@ const OrganizationsDashboard = ({
             
             {isLoggedIn && (
               <button
-                onClick={() => setCurrentPage('register-organization')}
+                onClick={() => setCurrentPage('public-sector-registration')}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 
@@ -330,7 +342,7 @@ const OrganizationsDashboard = ({
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl border p-6`}>
               <div className="flex items-center">
                 <div className="p-3 bg-blue-100 rounded-lg">
-                  
+                  <Building2 className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Organizations</p>
@@ -344,7 +356,7 @@ const OrganizationsDashboard = ({
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl border p-6`}>
               <div className="flex items-center">
                 <div className="p-3 bg-green-100 rounded-lg">
-                  
+                  <TrendingUp className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Active Items</p>
@@ -358,7 +370,7 @@ const OrganizationsDashboard = ({
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl border p-6`}>
               <div className="flex items-center">
                 <div className="p-3 bg-yellow-100 rounded-lg">
-                  
+                  <Award className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Items Returned</p>
@@ -372,7 +384,7 @@ const OrganizationsDashboard = ({
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl border p-6`}>
               <div className="flex items-center">
                 <div className="p-3 bg-purple-100 rounded-lg">
-                  
+                  <Star className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avg Rating</p>
@@ -450,7 +462,7 @@ const OrganizationsDashboard = ({
                       : darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  
+                  <Grid3x3 className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
@@ -460,7 +472,7 @@ const OrganizationsDashboard = ({
                       : darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  
+                  <List className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -470,7 +482,7 @@ const OrganizationsDashboard = ({
         {/* Organizations Grid/List */}
         {filteredOrganizations.length === 0 ? (
           <div className="text-center py-12">
-            
+            <Building2 className={`h-16 w-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
             <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               {t('organizations.noResults')}
             </h3>
@@ -538,20 +550,22 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
               <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {organization.name}
               </h3>
-              
+              {organization.verified && (
+                <CheckCircle className="h-5 w-5 text-blue-500 flex-shrink-0" />
+              )}
             </div>
             
             <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
               <div className="flex items-center">
-                
+                <MapPin className="h-4 w-4 mr-1" />
                 {organization.location}
               </div>
               <div className="flex items-center">
-                
+                <Users className="h-4 w-4 mr-1" />
                 {organization.activeItems} active items
               </div>
               <div className="flex items-center">
-                
+                <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
                 {organization.rating}
               </div>
             </div>
@@ -563,7 +577,7 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
 
           {/* Action */}
           <div className="flex-shrink-0">
-            
+            <ChevronRight className={`h-6 w-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'} group-hover:text-blue-600 transition-colors`} />
           </div>
         </div>
       </div>
@@ -584,7 +598,9 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
             alt={organization.name}
             className="w-16 h-16 rounded-xl object-cover"
           />
-          
+          {organization.verified && (
+            <CheckCircle className="h-6 w-6 text-blue-500" />
+          )}
         </div>
 
         <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -592,7 +608,7 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
         </h3>
 
         <div className="flex items-center text-sm text-gray-500 mb-3">
-          
+          <MapPin className="h-4 w-4 mr-1" />
           {organization.location}
         </div>
 
@@ -618,7 +634,7 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
           </div>
           <div>
             <div className="flex items-center justify-center">
-              
+              <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
               <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {organization.rating}
               </p>
@@ -631,7 +647,7 @@ const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes,
       {/* Action Button */}
       <div className="p-6 pt-4">
         <button className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors group-hover:bg-blue-700">
-          
+          <ChevronRight className="h-5 w-5 mr-1" />
           {t('organizations.viewItems')}
         </button>
       </div>

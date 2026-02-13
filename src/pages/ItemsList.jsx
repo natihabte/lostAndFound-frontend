@@ -37,7 +37,6 @@ export default function ItemsList() {
             <option value="">All Categories</option>
             <option>Electronic</option>
             <option>Document</option>
-            <option>Pet</option>
             <option>Other</option>
           </select>
         </div>
