@@ -8,6 +8,9 @@ export default defineConfig({
   // Ignore dead links during build
   ignoreDeadLinks: true,
   
+  // Disable clean URLs for GitHub Pages compatibility
+  cleanUrls: false,
+  
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
