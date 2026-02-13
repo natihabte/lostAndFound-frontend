@@ -5,11 +5,7 @@ export default defineConfig({
   title: 'Public Sector Lost & Found',
   description: 'Multi-tenant SaaS platform for lost and found management in public sector organizations',
   
-  // Ignore dead links during build
   ignoreDeadLinks: true,
-  
-  // Disable clean URLs for GitHub Pages compatibility
-  cleanUrls: false,
   
   themeConfig: {
     nav: [
@@ -24,27 +20,27 @@ export default defineConfig({
         {
           text: 'Getting Started',
           items: [
-            { text: 'Introduction', link: '/guide/' },
-            { text: 'Installation', link: '/guide/installation' },
-            { text: 'Quick Start', link: '/guide/quick-start' }
+            { text: 'Introduction', link: '/guide/index.html' },
+            { text: 'Installation', link: '/guide/installation.html' },
+            { text: 'Quick Start', link: '/guide/quick-start.html' }
           ]
         },
         {
           text: 'User Guide',
           items: [
-            { text: 'User Registration', link: '/guide/user-registration' },
-            { text: 'Organization Setup', link: '/guide/organization-setup' },
-            { text: 'Item Management', link: '/guide/item-management' },
-            { text: 'Claims Process', link: '/guide/claims-process' }
+            { text: 'User Registration', link: '/guide/user-registration.html' },
+            { text: 'Organization Setup', link: '/guide/organization-setup.html' },
+            { text: 'Item Management', link: '/guide/item-management.html' },
+            { text: 'Claims Process', link: '/guide/claims-process.html' }
           ]
         },
         {
           text: 'Features',
           items: [
-            { text: 'Multi-language Support', link: '/guide/i18n' },
-            { text: 'Dark Mode', link: '/guide/dark-mode' },
-            { text: 'Email Verification', link: '/guide/email-verification' },
-            { text: 'File Upload', link: '/guide/file-upload' }
+            { text: 'Multi-language Support', link: '/guide/i18n.html' },
+            { text: 'Dark Mode', link: '/guide/dark-mode.html' },
+            { text: 'Email Verification', link: '/guide/email-verification.html' },
+            { text: 'File Upload', link: '/guide/file-upload.html' }
           ]
         }
       ],
@@ -52,12 +48,12 @@ export default defineConfig({
         {
           text: 'API Reference',
           items: [
-            { text: 'Overview', link: '/api/' },
-            { text: 'Authentication', link: '/api/auth' },
-            { text: 'Users', link: '/api/users' },
-            { text: 'Organizations', link: '/api/organizations' },
-            { text: 'Items', link: '/api/items' },
-            { text: 'Claims', link: '/api/claims' }
+            { text: 'Overview', link: '/api/index.html' },
+            { text: 'Authentication', link: '/api/auth.html' },
+            { text: 'Users', link: '/api/users.html' },
+            { text: 'Organizations', link: '/api/organizations.html' },
+            { text: 'Items', link: '/api/items.html' },
+            { text: 'Claims', link: '/api/claims.html' }
           ]
         }
       ],
@@ -65,12 +61,12 @@ export default defineConfig({
         {
           text: 'Administration',
           items: [
-            { text: 'Overview', link: '/admin/' },
-            { text: 'Super Admin', link: '/admin/super-admin' },
-            { text: 'Organization Admin', link: '/admin/org-admin' },
-            { text: 'Hall Admin', link: '/admin/hall-admin' },
-            { text: 'User Management', link: '/admin/user-management' },
-            { text: 'Reports', link: '/admin/reports' }
+            { text: 'Overview', link: '/admin/index.html' },
+            { text: 'Super Admin', link: '/admin/super-admin.html' },
+            { text: 'Organization Admin', link: '/admin/org-admin.html' },
+            { text: 'Hall Admin', link: '/admin/hall-admin.html' },
+            { text: 'User Management', link: '/admin/user-management.html' },
+            { text: 'Reports', link: '/admin/reports.html' }
           ]
         }
       ]
