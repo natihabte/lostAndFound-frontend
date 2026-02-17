@@ -56,7 +56,13 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
         handleLogin(response.user.role, response.user);
       }
     } catch (err) {
-      setError(err.message || t('messages.errorOccurred'));
+      const errorMessage = err.message || t('messages.errorOccurred');
+      setError(errorMessage);
+      
+      // Show verification UI if email not verified
+      if (errorMessage.includes('verify your email')) {
+        setShowVerification(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -456,50 +462,6 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
                 className="w-full bg-gray-600 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 {loading ? t('auth.sending') : t('auth.resendVerificationCode')}
-              </button>
-
-              {/* Quick Verify Buttons */}
-              <div className="grid grid-cols-3 gap-2">
-                {['123456', '000000', '111111'].map(code => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => {
-                      setVerificationCode(code);
-                      setTimeout(() => {
-                        document.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true }));
-                      }, 100);
-                    }}
-                    className="px-3 py-2 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 text-sm font-medium transition-colors"
-                  >
-                    {t('auth.useCode')} {code}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    const { authAPI, authHelpers } = await import('../services/api');
-                    const response = await authAPI.verify(formData.email, '123456');
-                    
-                    authHelpers.saveToken(response.token);
-                    authHelpers.saveUser(response.user);
-                    
-                    setSuccess(t('messages.verificationSuccess'));
-                    handleLogin(response.user.role, response.user);
-                  } catch (err) {
-                    setError(t('auth.verificationFailed'));
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                className="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-              >
-                {loading ? t('auth.verifying') : t('auth.instantVerify')}
               </button>
 
               <button

@@ -11,7 +11,7 @@ export const handleResponse = async (response) => {
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.error || 'Request failed');
+    throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
   }
   
   return data;
