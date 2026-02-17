@@ -34,7 +34,6 @@ import {
 import ItemDetailPage from './pages/ItemDetailPage';
 import UserDashboardPage from './pages/UserDashboardPage';
 import UserSettings from './pages/UserSettings';
-import I18nTest from './components/I18nTest';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import HallAdminDashboard from './pages/admin/HallAdminDashboard';
@@ -1507,13 +1506,6 @@ export default function App() {
         />
       )}
       
-      {/* i18n Test Page */}
-      {currentPage === 'i18n-test' && (
-        <div className="min-h-screen bg-gray-50 py-8">
-          <I18nTest />
-        </div>
-      )}
-
       {/* Organizations Dashboard */}
       {currentPage === 'organizations' && (
         <OrganizationsDashboard 
