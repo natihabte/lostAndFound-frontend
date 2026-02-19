@@ -64,7 +64,6 @@ export default defineConfig({
             { text: 'Overview', link: '/admin/index.html' },
             { text: 'Super Admin', link: '/admin/super-admin.html' },
             { text: 'Organization Admin', link: '/admin/org-admin.html' },
-            { text: 'Hall Admin', link: '/admin/hall-admin.html' },
             { text: 'User Management', link: '/admin/user-management.html' },
             { text: 'Reports', link: '/admin/reports.html' }
           ]

@@ -1,6 +1,6 @@
 # Administration Guide
 
-The Public Sector Lost & Found Management Platform features a comprehensive three-tier administration system designed to provide appropriate access levels for different organizational needs.
+The Public Sector Lost & Found Management Platform features a comprehensive two-tier administration system designed to provide appropriate access levels for different organizational needs.
 
 ## Administration Hierarchy
 
@@ -15,12 +15,7 @@ The Public Sector Lost & Found Management Platform features a comprehensive thre
 - **User administration**: Manage users within their organization
 - **Content oversight**: Approve items and manage claims
 - **Organization reporting**: Analytics specific to their organization
-
-### Hall Admin
-- **Location-specific control**: Manage items for specific buildings or areas
-- **Item verification**: Approve and verify found items
-- **Local user support**: Assist users with claims and inquiries
-- **Location reporting**: Analytics for their specific area
+- **Location management**: Manage items for specific buildings or areas within their organization
 
 ## Access Levels
 
@@ -51,17 +46,8 @@ Access: `/admin/org-login` with organization admin credentials
 - Claim processing
 - Organization-specific reports
 - Branding and customization
-
-### Hall Admin Dashboard
-
-Access: `/admin/hall-login` with hall admin credentials
-
-**Key Features:**
 - Location-specific item management
 - Found item verification
-- User assistance and support
-- Location-based reporting
-- Claim coordination
 
 ## Getting Started as an Admin
 
@@ -85,7 +71,6 @@ Access: `/admin/hall-login` with hall admin credentials
 4. **User Management**
    - Review pending user registrations
    - Assign appropriate roles
-   - Set up hall admins for locations
    - Configure user permissions
 
 ### Daily Operations
@@ -132,15 +117,10 @@ Each admin level has a customized dashboard showing:
 
 **Organization Admin Permissions:**
 - Manage users in their organization
-- Assign hall admin roles
 - Organization-specific settings
 - Approve organization items
-
-**Hall Admin Permissions:**
-- Manage items in their location
-- Assist local users
-- Process location-specific claims
-- Generate location reports
+- Manage items in all locations
+- Process all claims within organization
 
 #### User Operations
 
@@ -151,7 +131,7 @@ const userOperations = {
   createUser: {
     name: "John Doe",
     email: "john@organization.com",
-    role: "hall_admin",
+    role: "user",
     organization: "org_id",
     location: "building_a"
   },
@@ -256,13 +236,9 @@ const locationConfig = {
 - Claim success rates
 - Popular item categories
 - Seasonal trends
-
-**Hall Admin Reports:**
 - Location-specific item counts
-- Local user activity
 - Claim processing times
 - Popular locations for lost items
-- Recovery success rates
 
 #### Custom Report Generation
 
@@ -318,19 +294,13 @@ const reportConfig = {
 
 ### For Organization Admins
 
-1. **User training**: Provide proper training for hall admins and users
+1. **User training**: Provide proper training for users
 2. **Regular reviews**: Periodically review user accounts and permissions
 3. **Content moderation**: Maintain quality standards for items and claims
 4. **Communication**: Keep users informed of policies and updates
 5. **Data hygiene**: Regularly clean up old or irrelevant data
-
-### For Hall Admins
-
-1. **Prompt processing**: Handle claims and approvals quickly
-2. **User assistance**: Provide helpful support to local users
-3. **Quality control**: Ensure accurate item descriptions and images
-4. **Communication**: Coordinate effectively with users and other admins
-5. **Documentation**: Maintain proper records of all activities
+6. **Prompt processing**: Handle claims and approvals quickly
+7. **Quality control**: Ensure accurate item descriptions and images
 
 ## Troubleshooting
 
@@ -408,6 +378,5 @@ const customWorkflow = {
 
 - [Super Admin Guide](./super-admin.md)
 - [Organization Admin Guide](./org-admin.md)
-- [Hall Admin Guide](./hall-admin.md)
 - [User Management](./user-management.md)
 - [Reports and Analytics](./reports.md)
