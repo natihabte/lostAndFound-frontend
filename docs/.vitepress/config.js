@@ -37,6 +37,7 @@ export default defineConfig({
         {
           text: 'Features',
           items: [
+            { text: 'Layout & Navigation', link: '/guide/layout-navigation.html' },
             { text: 'Multi-language Support', link: '/guide/i18n.html' },
             { text: 'Dark Mode', link: '/guide/dark-mode.html' },
             { text: 'Email Verification', link: '/guide/email-verification.html' },

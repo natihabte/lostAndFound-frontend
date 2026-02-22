@@ -91,4 +91,12 @@ External Services (Cloudinary, Email)
 
 ## Getting Started
 
-Ready to get started? Check out our [Installation Guide](./installation.md) to set up the platform, or jump to the [Quick Start](./quick-start.md) for a rapid overview.
+Ready to get started? Check out our guides:
+
+- [Installation Guide](./installation.md) - Set up the platform
+- [Quick Start](./quick-start.md) - Rapid overview
+- [Layout and Navigation](./layout-navigation.md) - Understand the UI structure
+- [User Registration](./user-registration.md) - User onboarding
+- [Item Management](./item-management.md) - Managing lost/found items
+- [Dark Mode](./dark-mode.md) - Theme customization
+- [Internationalization](./i18n.md) - Multi-language support

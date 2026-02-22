@@ -7,9 +7,12 @@ A comprehensive multi-tenant SaaS solution designed for public sector organizati
 - **Multi-tenant Architecture**: Separate data and customization for each organization
 - **Multi-language Support**: Available in English, Amharic, Oromo, and Tigrinya
 - **Role-based Access Control**: Super Admin, Organization Admin, and Hall Admin roles
+- **Global Header & Footer**: Consistent navigation across all pages
+- **Dynamic Platform Support**: Configurable contact information in footer
+- **Admin Sidebar**: Quick access to admin features for admin users
 - **Real-time Notifications**: Email verification and claim notifications
 - **Advanced Search**: Powerful search and filtering capabilities
-- **Dark/Light Mode**: User preference-based theming
+- **Dark/Light Mode**: User preference-based theming with full support
 - **Mobile Responsive**: Optimized for all device sizes
 - **File Upload**: Cloudinary integration for image management
 
