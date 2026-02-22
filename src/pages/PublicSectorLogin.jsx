@@ -337,16 +337,6 @@ const PublicSectorLogin = ({ handleLogin, setCurrentPage, darkMode, toggleDarkMo
               {t('auth.createUserAccount')}
             </button>
           </div>
-
-          {/* Guest Access */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setCurrentPage('home')}
-              className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-            >
-              {t('auth.continueAsGuest')} →
-            </button>
-          </div>
         </div>
 
         {/* Security Notice */}

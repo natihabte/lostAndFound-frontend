@@ -14,7 +14,9 @@
     "logout": "ውጣ",
     "addItem": "ዕቃ ለጥፍ",
     "getStarted": "ጀምር",
-    "loginRequired": "መግቢያ ያስፈልጋል"
+    "loginRequired": "መግቢያ ያስፈልጋል",
+    "back": "ተመለስ",
+    "goBack": "ተመለስ"
   },
   "search": {
     "placeholder": "በርዕስ ወይም በመግለጫ ይፈልጉ...",

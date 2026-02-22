@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-const AdminActivityLog = ({ darkMode }) => {
+import { useApp } from '../../contexts/AppContext';
+
+const AdminActivityLog = () => {
   const { t } = useTranslation();
+  const { darkMode } = useApp();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

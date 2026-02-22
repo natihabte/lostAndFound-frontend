@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../../contexts/AppContext';
 import { Users, Package, CheckCircle, ClipboardCheck, TrendingUp, UserCheck, Activity, LayoutDashboard, AlertCircle } from 'lucide-react';
+import { ROUTES } from '../../constants/routes';
 
-const OrgAdminDashboard = ({ darkMode, currentUser }) => {
+const OrgAdminDashboard = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { darkMode, currentUser } = useApp();
   const [stats, setStats] = useState({});
   const [pendingItems, setPendingItems] = useState([]);
   const [pendingClaims, setPendingClaims] = useState([]);

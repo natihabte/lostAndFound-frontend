@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../contexts/AppContext';
 import { User, Lock, Bell, Settings as SettingsIcon, Sun, Moon, Save } from 'lucide-react';
 
-const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword, setDarkMode }) => {
+const UserSettings = () => {
   const { t } = useTranslation();
+  const { currentUser, darkMode, setDarkMode, handleUpdateProfile } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -59,12 +61,10 @@ const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword
     setMessage({ type: '', text: '' });
 
     try {
-      if (onUpdateProfile) {
-        await onUpdateProfile(profileData);
-        // Update the original data to reflect the successful update
-        setOriginalProfileData(profileData);
-        setHasChanges(false);
-      }
+      await handleUpdateProfile(profileData);
+      // Update the original data to reflect the successful update
+      setOriginalProfileData(profileData);
+      setHasChanges(false);
       setMessage({ type: 'success', text: t('settings.messages.profileUpdated') });
     } catch (error) {
       console.error('Profile update error:', error);
@@ -96,9 +96,8 @@ const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword
     }
 
     try {
-      if (onChangePassword) {
-        await onChangePassword(passwordData.currentPassword, passwordData.newPassword);
-      }
+      const { authAPI } = await import('../services/api');
+      await authAPI.changePassword(passwordData.currentPassword, passwordData.newPassword);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setMessage({ type: 'success', text: t('settings.messages.passwordChanged') });
     } catch (error) {
@@ -217,10 +216,10 @@ const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword
 
         {/* Changes Indicator */}
         {hasChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-4`}>
             <div className="flex items-center">
               
-              <span className="text-sm text-yellow-700">
+              <span className={`text-sm ${darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
                 {t('settings.profile.unsavedChanges')}
               </span>
             </div>
@@ -238,8 +237,12 @@ const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword
             disabled={!hasChanges || loading}
             className={`px-4 py-2 border rounded-md transition-colors ${
               hasChanges && !loading
-                ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                ? darkMode 
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                : darkMode
+                  ? 'border-gray-700 text-gray-600 cursor-not-allowed'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
             {t('settings.profile.resetChanges')}
@@ -251,7 +254,9 @@ const UserSettings = ({ currentUser, darkMode, onUpdateProfile, onChangePassword
             className={`flex items-center px-6 py-2 rounded-md font-medium transition-all ${
               hasChanges && !loading
                 ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : darkMode
+                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
             

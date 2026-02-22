@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Search, Building2, CheckCircle, Clock, Ban, Edit, Trash2, Eye, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useApp } from '../../contexts/AppContext';
+import { organizationsAPI } from '../../services/api';
+import { Building2, CheckCircle, Clock, Ban, Trash2, Eye, Plus } from 'lucide-react';
 
-const AdminOrganizations = ({ darkMode, currentUser }) => {
-  const { t } = useTranslation();
+const AdminOrganizations = () => {
+  const { darkMode, currentUser } = useApp();
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,7 +12,6 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
   const [filterType, setFilterType] = useState('all');
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [orgToDelete, setOrgToDelete] = useState(null);
   const [stats, setStats] = useState({});
@@ -37,45 +37,6 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
       currentUser: currentUser || 'Not provided',
       windowLocation: window.location.href
     });
-
-    // FALLBACK AUTHENTICATION: If no currentUser but we have localStorage data, try to authenticate
-    if (!currentUser) {
-      const storedUser = localStorage.getItem('user');
-      const storedToken = localStorage.getItem('token');
-      
-      if (storedUser && storedToken) {
-        try {
-          const user = JSON.parse(storedUser);
-          console.log('🔄 Fallback authentication: Found stored user', user);
-          
-          // Test if the token is still valid by making a quick API call
-          fetch('http://localhost:5001/api/organizations', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(response => {
-            if (response.ok) {
-              console.log('✅ Stored token is valid, user should be authenticated');
-            } else {
-              console.log('❌ Stored token is invalid, clearing localStorage');
-              localStorage.clear();
-            }
-          })
-          .catch(error => {
-            console.log('❌ Token validation failed:', error);
-          });
-          
-        } catch (error) {
-          console.error('Error parsing stored user:', error);
-          localStorage.clear();
-        }
-      } else {
-        console.log('⚠️ No authentication data found. User needs to login.');
-      }
-    }
   }, [currentUser]);
 
   // Recalculate stats when organizations change
@@ -89,46 +50,17 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
     try {
       setLoading(true);
       
-      // Get auth token from localStorage
-      let token = localStorage.getItem('token');
+      console.log('Fetching organizations using organizationsAPI...');
       
-      if (!token) {
-        console.error('No auth token found in localStorage');
-        console.log('Available localStorage keys:', Object.keys(localStorage));
+      // Use the admin-specific API endpoint instead of the public one
+      const response = await organizationsAPI.getAllAdmin();
+      
+      console.log('Organizations API response:', response);
+      
+      if (response.success && response.data) {
+        const organizations = Array.isArray(response.data) ? response.data : [];
         
-        // Try to get user data and check if we need to re-authenticate
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          console.log('User data found but no token. User may need to re-login.');
-        }
-        
-        setOrganizations([]);
-        return;
-      }
-
-      console.log('Making API request with token:', token.substring(0, 30) + '...');
-
-      // Fetch real organizations from API
-      const response = await fetch('http://localhost:5001/api/organizations', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('API Response Status:', response.status);
-      console.log('API Response OK:', response.ok);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Organizations fetched successfully:', data);
-        
-        // Handle different response formats
-        const orgsData = data.data || data.organizations || data;
-        const organizations = Array.isArray(orgsData) ? orgsData : [];
-        
-        console.log('Raw organizations data:', organizations);
+        console.log('Organizations fetched successfully:', organizations);
         console.log('Organizations count:', organizations.length);
         
         // Transform data to match component expectations
@@ -151,35 +83,13 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
         console.log('Transformed organizations:', transformedOrgs);
         setOrganizations(transformedOrgs);
         
-        // Force stats calculation even if organizations array is empty
+        // Force stats calculation
         setTimeout(() => {
           fetchStats();
         }, 100);
         
       } else {
-        console.error('Failed to fetch organizations:', response.status, response.statusText);
-        
-        // Get error details
-        try {
-          const errorData = await response.json();
-          console.error('Error details:', errorData);
-          
-          if (response.status === 401) {
-            console.error('Authentication failed - token may be expired');
-            // Clear invalid token
-            localStorage.removeItem('token');
-          } else if (response.status === 403) {
-            console.error('Access denied - user may not have permission to view organizations');
-            const userData = localStorage.getItem('user');
-            if (userData) {
-              const user = JSON.parse(userData);
-              console.error('Current user role:', user.role);
-            }
-          }
-        } catch (parseError) {
-          console.error('Could not parse error response:', parseError);
-        }
-        
+        console.error('Failed to fetch organizations: Invalid response format');
         setOrganizations([]);
       }
     } catch (error) {
@@ -189,11 +99,6 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
         stack: error.stack,
         name: error.name
       });
-      
-      // Check if it's a network error
-      if (error.message.includes('fetch')) {
-        console.error('Network error - backend server may not be running on http://localhost:5001');
-      }
       
       setOrganizations([]);
     } finally {
@@ -234,7 +139,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
     }
   };
 
-  const handleStatusChange = async (orgId, newStatus, reason = '') => {
+  const handleStatusChange = async (orgId, newStatus) => {
     try {
       // Update local state for demo
       setOrganizations(orgs => 
@@ -250,7 +155,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
     }
   };
 
-  const handleDeleteOrganization = async (orgId, transferData = null) => {
+  const handleDeleteOrganization = async (orgId) => {
     try {
       // Remove from local state for demo
       setOrganizations(orgs => orgs.filter(org => org._id !== orgId));
@@ -297,14 +202,13 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
     }
   };
 
-  const StatCard = ({ title, value, icon: Icon, color = 'text-blue-600' }) => (
+  const StatCard = ({ title, value }) => (
     <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-6`}>
       <div className="flex items-center justify-between">
         <div>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{title}</p>
           <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mt-1`}>{value}</p>
         </div>
-        
       </div>
     </div>
   );
@@ -314,7 +218,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
-            
+            <Building2 className="h-5 w-5 text-blue-600" />
             <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               {org.name}
             </h3>
@@ -342,7 +246,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
             className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
             title="View Details"
           >
-            
+            <Eye className="h-4 w-4" />
           </button>
           
           {org.status === 'pending' && (
@@ -352,7 +256,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
                 className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                 title="Approve"
               >
-                
+                <CheckCircle className="h-4 w-4" />
               </button>
               <button
                 onClick={() => {
@@ -362,7 +266,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                 title="Reject"
               >
-                
+                <Ban className="h-4 w-4" />
               </button>
             </>
           )}
@@ -376,7 +280,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
               className="p-2 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-colors"
               title="Suspend"
             >
-              
+              <Clock className="h-4 w-4" />
             </button>
           )}
           
@@ -386,7 +290,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
               className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
               title="Reactivate"
             >
-              
+              <CheckCircle className="h-4 w-4" />
             </button>
           )}
           
@@ -398,7 +302,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
             className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             title="Delete"
           >
-            
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -498,8 +402,8 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
                 
                 <button
                   onClick={() => {
-                    // Manual redirect to admin login
-                    window.location.href = '/admin-login';
+                    // Redirect to login page
+                    window.location.href = '/';
                   }}
                   className="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium"
                 >
@@ -534,7 +438,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
               onClick={() => alert('Create Organization feature coming soon!')}
               className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              
+              <Plus className="h-4 w-4" />
               <span>Create Organization</span>
             </button>
           </div>
@@ -545,22 +449,18 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
           <StatCard
             title="Total Organizations"
             value={stats.organizations?.total || 0}
-            color="text-blue-600"
           />
           <StatCard
             title="Active"
             value={stats.organizations?.active || 0}
-            color="text-green-600"
           />
           <StatCard
             title="Pending Approval"
             value={stats.organizations?.pending || 0}
-            color="text-yellow-600"
           />
           <StatCard
             title="Suspended"
             value={stats.organizations?.suspended || 0}
-            color="text-red-600"
           />
         </div>
 
@@ -568,7 +468,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 mb-6`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              
+              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search organizations..."
@@ -620,7 +520,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
 
         {filteredOrgs.length === 0 && (
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-12 text-center`}>
-            
+            <Building2 className={`h-16 w-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
             <h3 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
               No organizations found
             </h3>
@@ -645,7 +545,7 @@ const AdminOrganizations = ({ darkMode, currentUser }) => {
                   onClick={() => setShowDetailModal(false)}
                   className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
                 >
-                  
+                  ✕
                 </button>
               </div>
               

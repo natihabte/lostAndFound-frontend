@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle, Sun, Moon } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
+import { ROUTES } from '../constants/routes';
+import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfService from './TermsOfService';
 
-const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setShowPrivacyPolicy, setShowTermsOfService }) => {
+const ModernAuth = () => {
+  const navigate = useNavigate();
+  const { handleLogin, darkMode, toggleDarkMode } = useApp();
   const { t } = useTranslation();
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTermsOfService, setShowTermsOfService] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
@@ -53,7 +62,15 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
         authHelpers.saveUser(response.user);
         
         setSuccess(t('messages.loginSuccess'));
-        handleLogin(response.user.role, response.user);
+        await handleLogin(response.user.role, response.user);
+        
+        // Navigate based on user role - redirect admins to admin dashboard
+        if (response.user.role === 'superAdmin' || response.user.role === 'admin' || 
+            response.user.role === 'hallAdmin' || response.user.role === 'orgAdmin') {
+          navigate(ROUTES.ADMIN);
+        } else {
+          navigate(ROUTES.HOME);
+        }
       }
     } catch (err) {
       const errorMessage = err.message || t('messages.errorOccurred');
@@ -81,7 +98,15 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
       authHelpers.saveUser(response.user);
       
       setSuccess('Email verified successfully!');
-      handleLogin(response.user.role, response.user);
+      await handleLogin(response.user.role, response.user);
+      
+      // Navigate based on user role - redirect admins to admin dashboard
+      if (response.user.role === 'superAdmin' || response.user.role === 'admin' || 
+          response.user.role === 'hallAdmin' || response.user.role === 'orgAdmin') {
+        navigate(ROUTES.ADMIN);
+      } else {
+        navigate(ROUTES.HOME);
+      }
     } catch (err) {
       setError(err.message || t('auth.invalidVerificationCode'));
     } finally {
@@ -148,20 +173,18 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
       <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} flex items-center justify-center px-4`}>
         
         {/* Dark/Light Mode Toggle - Fixed Position */}
-        {setDarkMode && (
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
-              darkMode 
-                ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-            aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-            title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-          >
-            {darkMode ? '??' : '??'}
-          </button>
-        )}
+        <button
+          onClick={toggleDarkMode}
+          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
+            darkMode 
+              ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+          title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
         
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
@@ -233,20 +256,18 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
       <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-green-50 to-teal-100'} flex items-center justify-center px-4`}>
         
         {/* Dark/Light Mode Toggle - Fixed Position */}
-        {setDarkMode && (
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
-              darkMode 
-                ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-            aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-            title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-          >
-            {darkMode ? '??' : '??'}
-          </button>
-        )}
+        <button
+          onClick={toggleDarkMode}
+          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
+            darkMode 
+              ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+          title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
         
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
@@ -359,47 +380,26 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
       <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} flex items-center justify-center px-4`}>
         
         {/* Dark/Light Mode Toggle - Fixed Position */}
-        {setDarkMode && (
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
-              darkMode 
-                ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-            aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-            title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-          >
-            {darkMode ? '??' : '??'}
-          </button>
-        )}
+        <button
+          onClick={toggleDarkMode}
+          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
+            darkMode 
+              ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+          title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
         
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <div className={`h-16 w-16 ${darkMode ? 'bg-blue-900' : 'bg-blue-100'} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-              
+              📧
             </div>
             <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('auth.verifyEmail')}</h1>
             <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mt-2`}>{t('auth.verificationSentTo')} {formData.email}</p>
-            
-            {/* Clear Instructions for Users */}
-            <div className={`mt-4 p-4 ${darkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'} border-2 rounded-xl`}>
-              <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-800'} font-bold`}>📧 {t('auth.checkYourEmail')}</p>
-              <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-blue-700'} mt-1`}>
-                {t('auth.verificationCodeSent')}
-              </p>
-              <p className={`text-xs ${darkMode ? 'text-blue-500' : 'text-blue-600'} mt-2`}>
-                {t('auth.checkSpamFolder')}
-              </p>
-            </div>
-            
-            {/* Development Mode Notice */}
-            <div className={`mt-2 p-3 ${darkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200'} border rounded-xl`}>
-              <p className={`text-xs ${darkMode ? 'text-green-300' : 'text-green-800'} font-bold`}>{t('auth.developmentMode')}</p>
-              <p className={`text-xs ${darkMode ? 'text-green-400' : 'text-green-700'} mt-1`}>
-                {t('auth.testingInstructions')}
-              </p>
-            </div>
           </div>
 
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-8`}>
@@ -483,20 +483,18 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} flex items-center justify-center px-4`}>
       
       {/* Dark/Light Mode Toggle - Fixed Position */}
-      {setDarkMode && (
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
-            darkMode 
-              ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-          aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-          title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-        >
-          {darkMode ? '??' : '??'}
-        </button>
-      )}
+      <button
+        onClick={toggleDarkMode}
+        className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all ${
+          darkMode 
+            ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+            : 'bg-white text-gray-700 hover:bg-gray-100'
+        }`}
+        aria-label={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+        title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
       
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
@@ -699,40 +697,13 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setCurrentPage('landing')}
-              className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
-            >
-              ← {t('navigation.backToHome')}
-            </button>
-          </div>
-
-          {/* PROMINENT ADMIN LOGIN - MOVED TO TOP */}
-          <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} text-center mb-3 font-medium`}>
-              🛡️ {t('auth.administrativeAccess')} 🛡️
-            </p>
-            <button
-              onClick={() => setCurrentPage('adminLogin')}
-              className={`w-full py-3 px-6 border-2 rounded-xl font-bold transition-colors flex items-center justify-center text-lg ${
-                darkMode 
-                  ? 'border-purple-500 text-purple-400 hover:bg-purple-900/20 bg-purple-900/10' 
-                  : 'border-purple-600 text-purple-600 hover:bg-purple-50 bg-purple-50'
-              }`}
-            >
-              
-              {t('auth.adminLogin')}
-            </button>
-          </div>
-
           {/* Organization Registration */}
           <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center mb-3`}>
               {t('auth.publicSectorQuestion')}
             </p>
             <button
-              onClick={() => setCurrentPage('public-sector-registration')}
+              onClick={() => navigate(ROUTES.PUBLIC_SECTOR_REGISTRATION)}
               className={`w-full py-3 px-6 border-2 rounded-xl font-medium transition-colors flex items-center justify-center ${
                 darkMode 
                   ? 'border-blue-500 text-blue-400 hover:bg-blue-900/20' 
@@ -745,6 +716,21 @@ const ModernAuth = ({ handleLogin, setCurrentPage, darkMode, setDarkMode, setSho
           </div>
         </div>
       </div>
+      
+      {/* Legal Modals */}
+      {showPrivacyPolicy && (
+        <PrivacyPolicy 
+          onClose={() => setShowPrivacyPolicy(false)}
+          darkMode={darkMode}
+        />
+      )}
+
+      {showTermsOfService && (
+        <TermsOfService 
+          onClose={() => setShowTermsOfService(false)}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 };

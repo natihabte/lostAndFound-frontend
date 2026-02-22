@@ -164,15 +164,6 @@ const EmailVerification = ({ email, onVerified, onBack }) => {
             </button>
           </div>
         )}
-
-        {/* Development Mode Notice */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p className="text-yellow-800 dark:text-yellow-400 text-xs text-center">
-              <strong>Development Mode:</strong> Any 6-digit code will work (e.g., 123456)
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { platformSettingsAPI } from '../services/api';
+
 const AccessibleNavigation = ({ 
   currentPage, 
   setCurrentPage, 
@@ -9,8 +11,29 @@ const AccessibleNavigation = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [platformSupport, setPlatformSupport] = useState({
+    enabled: true,
+    phoneNumber: '+1-800-555-0123',
+    is24x7: true
+  });
   const mobileMenuRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  // Load platform support settings
+  useEffect(() => {
+    const loadPlatformSettings = async () => {
+      try {
+        const response = await platformSettingsAPI.getPublic();
+        if (response.success && response.data) {
+          setPlatformSupport(response.data);
+        }
+      } catch (error) {
+        // Silently fail - use default values
+        console.error('Failed to load platform settings:', error);
+      }
+    };
+    loadPlatformSettings();
+  }, []);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -86,10 +109,12 @@ const AccessibleNavigation = ({
               
               <span className="font-medium">Public Sector Lost & Found Service</span>
             </div>
-            <div className="hidden sm:flex items-center space-x-4">
-              <span>📞 Platform Support: +1-800-555-0123</span>
-              <span>🕒 Available 24/7</span>
-            </div>
+            {platformSupport.enabled && (
+              <div className="hidden sm:flex items-center space-x-4">
+                <span>� Platform Support: {platformSupport?.phoneNumber || ''}</span>
+                {platformSupport.is24x7 && <span>�🕒 Available 24/7</span>}
+              </div>
+            )}
           </div>
         </div>
       </div>

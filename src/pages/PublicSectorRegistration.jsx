@@ -248,7 +248,7 @@ const PublicSectorRegistration = ({ setCurrentPage, darkMode }) => {
         }));
         
         // Redirect to organization dashboard after email verification
-        setCurrentPage('verify-organization');
+        setCurrentPage('organization-verification');
       } else {
         setErrors({ submit: result.message || t('organization.register.errors.registrationFailed') });
       }

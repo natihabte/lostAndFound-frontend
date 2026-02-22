@@ -16,7 +16,6 @@ import ModernItemCard from './components/ModernItemCard';
 import ModernAddItem from './components/ModernAddItem';
 import ModernProfile from './components/ModernProfile';
 import ModernMessaging from './components/ModernMessaging';
-import AccessibleNavigation from './components/AccessibleNavigation';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import { 
@@ -666,24 +665,6 @@ function LoginPage({ handleLogin, setCurrentPage, setShowPrivacyPolicy, setShowT
               {loading ? 'Loading...' : (isRegister ? t.createAccount : t.signIn)}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setCurrentPage('home')}
-              className="text-sm text-gray-600 hover:text-gray-800"
-            >
-              {t.continueAsGuest}
-            </button>
-          </div>
-
-          <div className="mt-4 pt-4 border-t text-center">
-            <button
-              onClick={() => setCurrentPage('adminLogin')}
-              className="text-sm text-purple-600 hover:text-purple-800 font-medium"
-            >
-              {t.adminLogin}
-            </button>
-          </div>
         </div>
 
         <p className="text-center text-sm text-gray-600 mt-6">
@@ -976,6 +957,7 @@ function ProfilePage({ userRole, items, currentUser }) {
 export default function App() {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState('landing');
+  const [pageHistory, setPageHistory] = useState(['landing']); // Navigation history
   const [userRole, setUserRole] = useState('guest');
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -1008,6 +990,24 @@ export default function App() {
   });
 
   // Translations now handled by react-i18next
+
+  // Navigation helper with history tracking
+  const navigateTo = useCallback((page) => {
+    setPageHistory(prev => [...prev, currentPage]);
+    setCurrentPage(page);
+  }, [currentPage]);
+
+  // Go back to previous page
+  const goBack = useCallback(() => {
+    if (pageHistory.length > 0) {
+      const previousPage = pageHistory[pageHistory.length - 1];
+      setPageHistory(prev => prev.slice(0, -1));
+      setCurrentPage(previousPage);
+    } else {
+      // Default fallback
+      setCurrentPage(isLoggedIn ? 'home' : 'landing');
+    }
+  }, [pageHistory, isLoggedIn]);
 
   // Define fetch functions first
   const fetchItems = useCallback(async (customFilters = {}) => {
@@ -1142,8 +1142,11 @@ export default function App() {
     };
   }, []);
 
-  const handleLogin = useCallback((role, user) => {
+  const handleLogin = useCallback(async (role, user) => {
     console.log('🔐 handleLogin called with:', { role, user, roleType: typeof role });
+    
+    // Import auth helpers
+    const { authHelpers } = await import('./services/api');
     
     // Force correct role for organization admin accounts
     let finalRole = role;
@@ -1158,6 +1161,13 @@ export default function App() {
         finalRole = 'orgAdmin';
         console.log('🔧 Fixed role for organization admin in handleLogin:', user.email, '→', finalRole);
       }
+    }
+    
+    // Update user role in the user object if it was corrected
+    if (finalRole !== user.role) {
+      user = { ...user, role: finalRole };
+      // Re-save the corrected user data
+      authHelpers.saveUser(user);
     }
     
     setUserRole(finalRole);
@@ -1366,14 +1376,47 @@ export default function App() {
 
   const handleCreateUser = useCallback(async (userData) => {
     try {
-      const { usersAPI } = await import('./services/api');
+      // Check if user is logged in
+      if (!isLoggedIn || !currentUser) {
+        alert('Please login first to create users');
+        setCurrentPage('login');
+        return;
+      }
+
+      // Check if user has admin role
+      const adminRoles = ['admin', 'hallAdmin', 'orgAdmin'];
+      if (!adminRoles.includes(currentUser.role)) {
+        alert(`Access denied. You need admin privileges to create users.\nYour current role: ${currentUser.role}\nRequired roles: ${adminRoles.join(', ')}`);
+        return;
+      }
+
+      const { usersAPI, authHelpers } = await import('./services/api');
+      
+      // Verify token exists
+      const token = authHelpers.getToken();
+      if (!token) {
+        alert('Session expired. Please login again.');
+        handleLogout();
+        return;
+      }
+
       await usersAPI.createUser(userData);
       fetchUsers();
       alert('User created successfully!');
     } catch (error) {
-      alert(error.message || 'Failed to create user');
+      console.error('Create user error:', error);
+      
+      // Handle specific error cases
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        alert('Authentication failed. Please logout and login again with an admin account.');
+        handleLogout();
+      } else if (error.message.includes('403') || error.message.includes('Access denied')) {
+        alert('Access denied. You need admin privileges to create users.');
+      } else {
+        alert(error.message || 'Failed to create user');
+      }
     }
-  }, [fetchUsers]);
+  }, [fetchUsers, isLoggedIn, currentUser, handleLogout, setCurrentPage]);
 
   const handleApproveItem = useCallback(async (itemId) => {
     try {
@@ -1420,7 +1463,7 @@ export default function App() {
   return (
     <div className={`min-h-screen transition-colors ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Modern Header - Always show except on login */}
-      {currentPage !== 'login' && currentPage !== 'adminLogin' && (
+      {currentPage !== 'login' && (
         <ModernHeader 
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -1470,14 +1513,9 @@ export default function App() {
         />
       )}
       
-      {/* Admin Login */}
-      {currentPage === 'adminLogin' && (
-        <AdminLogin 
-          onAdminLogin={handleLogin}
-          setCurrentPage={setCurrentPage}
-          darkMode={darkMode}
-        />
-      )}
+      {/* Admin Login - Removed: Now using unified login for all users */}
+      {/* All users (regular and admin) login through the same page */}
+      {/* The system automatically redirects based on user role */}
       
       {/* Organization Registration */}
       {currentPage === 'register-organization' && (
@@ -1655,6 +1693,7 @@ export default function App() {
           currentUser={currentUser}
           darkMode={darkMode}
           setCurrentPage={setCurrentPage}
+          onBack={goBack}
         />
       )}
 
@@ -1719,6 +1758,20 @@ export default function App() {
           darkMode={darkMode}
           onUpdateProfile={handleUpdateProfile}
           onChangePassword={handleChangePassword}
+          defaultTab="profile"
+          onBack={goBack}
+        />
+      )}
+
+      {/* Platform Support Settings - Opens directly to Platform Support tab */}
+      {currentPage === 'platform-support' && (
+        <AdminSettings 
+          currentUser={currentUser}
+          darkMode={darkMode}
+          onUpdateProfile={handleUpdateProfile}
+          onChangePassword={handleChangePassword}
+          defaultTab="platform"
+          onBack={goBack}
         />
       )}
 

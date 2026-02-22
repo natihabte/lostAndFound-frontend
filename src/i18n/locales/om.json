@@ -14,7 +14,9 @@
     "logout": "Ba'i",
     "addItem": "Meeshaa Maxxansi",
     "getStarted": "Jalqabi",
-    "loginRequired": "Seensuun Barbaachisaa"
+    "loginRequired": "Seensuun Barbaachisaa",
+    "back": "Duubatti Deebi'i",
+    "goBack": "Duubatti Deebi'i"
   },
   "search": {
     "placeholder": "Mata duree ykn ibsa barbaadi...",

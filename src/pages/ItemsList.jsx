@@ -24,16 +24,16 @@ export default function ItemsList() {
   });
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <main className="max-w-6xl mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">All Items</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">All Items</h2>
         <div className="flex gap-2">
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded-md px-2 py-1">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border rounded-md px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
             <option value="">All Status</option>
             <option value="Lost">Lost</option>
             <option value="Found">Found</option>
           </select>
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="border rounded-md px-2 py-1">
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="border rounded-md px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
             <option value="">All Categories</option>
             <option>Electronic</option>
             <option>Document</option>
@@ -52,7 +52,7 @@ export default function ItemsList() {
 
       <div className="mt-6 grid grid-cols-1 gap-4">
         {filtered.map((it) => <ItemCard key={it.id} item={it} />)}
-        {filtered.length === 0 && <div className="text-gray-500">No items match your filters.</div>}
+        {filtered.length === 0 && <div className="text-gray-500 dark:text-gray-400">No items match your filters.</div>}
       </div>
     </main>
   );

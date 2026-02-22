@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { Upload, MapPin, Tag, FileText, Save, X, Image as ImageIcon } from 'lucide-react';
 
-const ModernAddItem = ({ onClose, onSubmit, currentUser, editingItem, selectedOrganization }) => {
+const ModernAddItem = ({ onSubmit, currentUser, editingItem, selectedOrganization }) => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: editingItem?.title || '',
@@ -94,7 +97,7 @@ const ModernAddItem = ({ onClose, onSubmit, currentUser, editingItem, selectedOr
         ...(selectedOrganization && { organizationId: selectedOrganization.id })
       };
       await onSubmit(submitData);
-      onClose();
+      navigate(-1); // Go back to previous page
     } catch (error) {
       setError(error.message || t('addItem.errors.submitFailed'));
     } finally {
@@ -106,6 +109,10 @@ const ModernAddItem = ({ onClose, onSubmit, currentUser, editingItem, selectedOr
     setImageFile(null);
     setImagePreview(null);
     setFormData(prev => ({ ...prev, imageUrl: '' }));
+  };
+
+  const handleClose = () => {
+    navigate(-1); // Go back to previous page
   };
 
   return (
@@ -122,7 +129,7 @@ const ModernAddItem = ({ onClose, onSubmit, currentUser, editingItem, selectedOr
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
           >
             <X className="h-5 w-5" />
@@ -365,7 +372,7 @@ const ModernAddItem = ({ onClose, onSubmit, currentUser, editingItem, selectedOr
           <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
             >
               {t('items.cancel')}

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../../contexts/AppContext';
 import { Users, Package, CheckCircle, AlertCircle, TrendingUp, Settings, BarChart3 } from 'lucide-react';
+import { ROUTES } from '../../constants/routes';
 
 const AdminDashboard = ({ 
   items = [], 
-  users = [], 
-  currentUser, 
-  darkMode, 
-  setCurrentPage 
+  users = []
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { currentUser, darkMode } = useApp();
   const [stats, setStats] = useState({});
   const [recentActivity, setRecentActivity] = useState([]);
 
@@ -98,20 +100,6 @@ const AdminDashboard = ({
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* HUGE SETTINGS BUTTON - IMPOSSIBLE TO MISS */}
-        <div className="mb-8 text-center">
-          <button
-            onClick={() => {
-              alert('🚀 ADMIN SETTINGS BUTTON CLICKED! Going to settings...');
-              setCurrentPage('admin-settings');
-            }}
-            className="w-full max-w-md mx-auto bg-gradient-to-r from-red-600 to-orange-600 text-white py-6 px-8 rounded-2xl text-2xl font-bold shadow-2xl hover:from-red-700 hover:to-orange-700 transition-all transform hover:scale-105 flex items-center justify-center"
-          >
-            ADMIN SETTINGS
-          </button>
-          <p className="text-sm text-gray-500 mt-2">Click this button to access admin settings</p>
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -124,11 +112,11 @@ const AdminDashboard = ({
               </p>
             </div>
             
-            {/* Prominent Settings Button */}
+            {/* Admin Settings Button */}
             <button
               onClick={() => {
-                console.log('Header Settings button clicked!');
-                setCurrentPage('admin-settings');
+                console.log('Admin Settings button clicked!');
+                navigate(ROUTES.ADMIN_SETTINGS);
               }}
               className="flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium shadow-lg"
             >
@@ -176,36 +164,6 @@ const AdminDashboard = ({
             <TrendingUp className="h-6 w-6 mr-2" />
             Quick Actions
           </h2>
-          
-          {/* ANOTHER BIG SETTINGS BUTTON */}
-          <div className="mb-6">
-            <button
-              onClick={() => {
-                alert('⚙️ QUICK ACTION SETTINGS CLICKED! Navigating...');
-                setCurrentPage('admin-settings');
-              }}
-              className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-            >
-              
-              ⚙️ CLICK HERE FOR ADMIN SETTINGS ⚙️
-            </button>
-          </div>
-          
-          {/* Debug Info */}
-          <div className={`mb-4 p-4 ${darkMode ? 'bg-gray-800' : 'bg-blue-50'} rounded-lg border`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-blue-700'} mb-2`}>
-              Debug: Available actions - Users, Posts, Reports, Settings, Analytics, Back to Site
-            </p>
-            <button
-              onClick={() => {
-                alert('Test button clicked! Navigating to admin-settings...');
-                setCurrentPage('admin-settings');
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-            >
-              🚀 TEST: Go to Admin Settings
-            </button>
-          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-8">
@@ -214,32 +172,32 @@ const AdminDashboard = ({
             description={t('admin.quickActions.manageUsersDesc')}
             icon={Users}
             color="text-blue-600"
-            onClick={() => setCurrentPage('admin-users')}
+            onClick={() => navigate(ROUTES.ADMIN_USERS)}
           />
           <QuickActionCard
             title={t('admin.quickActions.managePosts')}
             description={t('admin.quickActions.managePostsDesc')}
             icon={Package}
             color="text-green-600"
-            onClick={() => setCurrentPage('admin-posts')}
+            onClick={() => navigate(ROUTES.ADMIN_POSTS)}
           />
           <QuickActionCard
             title="User Activity Log"
             description="Monitor user registrations, logins, and all system activities"
             color="text-purple-600"
-            onClick={() => setCurrentPage('admin-activity-log')}
+            onClick={() => navigate(ROUTES.ADMIN_ACTIVITY_LOG)}
           />
           <QuickActionCard
             title={t('admin.quickActions.viewReports')}
             description={t('admin.quickActions.viewReportsDesc')}
             color="text-red-600"
-            onClick={() => setCurrentPage('admin-reports')}
+            onClick={() => navigate(ROUTES.ADMIN_REPORTS)}
           />
           <QuickActionCard
             title="Manage Organizations"
             description="Control organization access, permissions, and subscription plans"
             color="text-blue-600"
-            onClick={() => setCurrentPage('admin-organizations')}
+            onClick={() => navigate(ROUTES.ADMIN_ORGANIZATIONS)}
           />
           <QuickActionCard
             title={t('admin.quickActions.systemSettings')}
@@ -248,7 +206,7 @@ const AdminDashboard = ({
             color="text-orange-600"
             onClick={() => {
               console.log('System Settings clicked!');
-              setCurrentPage('admin-settings');
+              navigate(ROUTES.ADMIN_SETTINGS);
             }}
           />
           <QuickActionCard
@@ -256,13 +214,13 @@ const AdminDashboard = ({
             description={t('admin.quickActions.analyticsDesc')}
             icon={BarChart3}
             color="text-indigo-600"
-            onClick={() => setCurrentPage('admin-analytics')}
+            onClick={() => navigate(ROUTES.ADMIN_ANALYTICS)}
           />
           <QuickActionCard
             title={t('admin.quickActions.backToSite')}
             description={t('admin.quickActions.backToSiteDesc')}
             color="text-gray-600"
-            onClick={() => setCurrentPage('home')}
+            onClick={() => navigate(ROUTES.HOME)}
           />
         </div>
 

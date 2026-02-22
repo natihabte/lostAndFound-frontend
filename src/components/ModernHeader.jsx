@@ -1,22 +1,39 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, User, LogOut, Settings, Shield, Sun, Moon } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 import InlineLanguageSelector from './InlineLanguageSelector';
+import { useApp } from '../contexts/AppContext';
+import { ROUTES } from '../constants/routes';
+import { platformSettingsAPI } from '../services/api';
 
-const ModernHeader = ({ 
-  currentPage, 
-  setCurrentPage, 
-  isLoggedIn, 
-  userRole, 
-  currentUser,
-  handleLogout,
-  searchTerm,
-  setSearchTerm,
-  darkMode,
-  setDarkMode
-}) => {
+const ModernHeader = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isLoggedIn, userRole, currentUser, handleLogout, darkMode, toggleDarkMode } = useApp();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [platformSupport, setPlatformSupport] = React.useState({
+    enabled: true,
+    phoneNumber: '+1-800-555-0123',
+    is24x7: true
+  });
+
+  // Load platform support settings
+  React.useEffect(() => {
+    const loadPlatformSettings = async () => {
+      try {
+        const response = await platformSettingsAPI.getPublic();
+        if (response.success && response.data) {
+          setPlatformSupport(response.data);
+        }
+      } catch (error) {
+        // Silently fail - use default values
+        console.error('Failed to load platform settings:', error);
+      }
+    };
+    loadPlatformSettings();
+  }, []);
 
   // DEBUG: Log the props being received
   React.useEffect(() => {
@@ -31,107 +48,67 @@ const ModernHeader = ({
 
   // Helper function to check if user is admin
   const isAdminUser = () => {
+    // Only check userRole prop and currentUser.role
+    // Do NOT check localStorage to avoid stale data
+    
     // Check userRole prop first
-    if (userRole && ['admin', 'hallAdmin', 'orgAdmin', 'org_admin'].includes(userRole)) {
+    if (userRole && ['superAdmin', 'admin'].includes(userRole)) {
       return true;
     }
     
     // Check currentUser.role as backup
-    if (currentUser?.role && ['admin', 'hallAdmin', 'orgAdmin', 'org_admin'].includes(currentUser.role)) {
+    if (currentUser?.role && ['superAdmin', 'admin'].includes(currentUser.role)) {
       return true;
     }
     
-    // Check localStorage as final backup
-    try {
-      const storedUser = localStorage.getItem('user');
-      const storedRole = localStorage.getItem('userRole');
-      
-      if (storedRole && ['admin', 'hallAdmin', 'orgAdmin', 'org_admin'].includes(storedRole)) {
-        return true;
-      }
-      
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.role && ['admin', 'hallAdmin', 'orgAdmin', 'org_admin'].includes(userData.role)) {
-          return true;
-        }
-      }
-    } catch (error) {
-      console.error('Error checking localStorage for admin role:', error);
-    }
-    
+    // Default to false - user is NOT an admin
     return false;
   };
 
-  const navigation = [
-    { name: t('navigation.browse'), page: 'home', guest: true },
-    { name: t('navigation.profile'), page: 'profile', guest: false },
-  ];
+  // Get current page from location
+  const currentPage = location.pathname;
+  
+  // Check if currently on admin dashboard
+  const isOnAdminDashboard = currentPage.startsWith('/admin');
 
-  // Organizations as primary navigation item
-  const organizationsNav = { name: 'Organizations', page: 'organizations', guest: true, primary: true };
+  // Simplified navigation - No dashboard button for admins (they use sidebar)
+  const getDashboardButton = () => {
+    if (!isLoggedIn) return null;
+    
+    // Admins don't need dashboard button - they use sidebar navigation
+    if (isAdminUser()) {
+      return null;
+    }
+    
+    // For regular users: only My Dashboard
+    return {
+      name: t('navigation.profile'),
+      route: ROUTES.PROFILE,
+      icon: '👤',
+      color: 'blue'
+    };
+  };
 
-  // Add user settings for non-admin users, admin settings for admin users
-  const settingsNavigation = isAdminUser() ? [
-    { name: t('admin.settings.title'), page: 'admin-settings', guest: false },
-  ] : [
-    { name: t('pages.userSettings'), page: 'user-settings', guest: false },
-  ];
-
-  // Add admin navigation if user is admin, hallAdmin, or orgAdmin
-  const adminNavigation = isAdminUser() ? [
-    { name: t('admin.dashboard.title'), page: 'admin', guest: false },
-    { name: 'Organizations', page: 'admin-organizations', guest: false },
-    { name: 'Orders', page: 'admin-orders', guest: false },
-    { name: 'Simple Orders', page: 'simple-admin-orders', guest: false },
-    { name: 'Reports', page: 'admin-reports', guest: false },
-  ] : [];
-
-  const allNavigation = [...navigation, ...adminNavigation, ...settingsNavigation]
-    .filter((item, index, self) => 
-      index === self.findIndex(t => t.page === item.page)
-    ); // Remove duplicates by page
+  const dashboardButton = getDashboardButton();
 
   return (
-    <header className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} shadow-sm border-b sticky top-0 z-50 transition-colors`}>
-      {/* Platform Banner */}
-      <div className="bg-blue-600 text-white py-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-4">
-              
-              <span className="font-medium">{t('app.name')}</span>
-              
-              {/* Quick Organizations Access */}
-              <button
-                onClick={() => setCurrentPage('organizations')}
-                className="flex items-center space-x-1 px-3 py-1 bg-blue-500 hover:bg-blue-400 rounded-full text-xs font-medium transition-colors"
-              >
-                
-                <span>Organizations</span>
-              </button>
-              
-              {/* DEBUG: Show user role */}
-              {isLoggedIn && (
-                <span className={`px-2 py-1 rounded text-xs font-bold ${
-                  isAdminUser()
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-green-500 text-white'
-                }`}>
-                  {isAdminUser() ? 'ADMIN MODE' : 'USER MODE'}
-                </span>
-              )}
-            </div>
-            <div className="hidden sm:flex items-center space-x-4">
-              <span>📞 {t('contact.platformSupport')}</span>
-              <span>🕒 {t('contact.service24x7')}</span>
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                🌐 {t('language.select')}
-              </span>
+    <header className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} shadow-sm border-b fixed top-0 left-0 right-0 z-50 transition-colors`}>
+      {/* Platform Banner - Hide for superAdmin */}
+      {platformSupport.enabled && !isAdminUser() && (
+        <div className="bg-blue-600 text-white py-2">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-4">
+                <span className="font-medium">{t('app.name')}</span>
+              </div>
+              <div className="hidden sm:flex items-center space-x-4 font-medium">
+                <span>📞 Platform Support {platformSupport.phoneNumber}</span>
+                <span>🕒 {t('contact.service24x7')}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,7 +121,7 @@ const ModernHeader = ({
               </div>
               <div className="ml-3">
                 <button 
-                  onClick={() => setCurrentPage(isLoggedIn ? 'home' : 'landing')}
+                  onClick={() => navigate(isLoggedIn ? ROUTES.HOME : ROUTES.LANDING)}
                   className={`text-xl font-bold ${darkMode ? 'text-white hover:text-blue-400' : 'text-gray-900 hover:text-blue-600'} transition-colors`}
                 >
                   {t('app.name')}
@@ -154,59 +131,53 @@ const ModernHeader = ({
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-1 overflow-hidden">
-            {/* Primary Organizations Button */}
-            <button
-              onClick={() => setCurrentPage('organizations')}
-              className={`inline-flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all mr-4 ${
-                currentPage === 'organizations'
-                  ? 'bg-green-600 text-white shadow-lg transform scale-105'
-                  : darkMode 
-                    ? 'bg-gray-700 text-green-400 hover:bg-green-600 hover:text-white border border-green-500' 
-                    : 'bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-300'
-              }`}
-            >
-              <span className="font-bold">ORGANIZATIONS</span>
-            </button>
+          {/* Desktop Navigation - Simplified */}
+          <nav className="hidden md:flex items-center space-x-2">
+            {/* Browse Items - Hide for admins */}
+            {!isAdminUser() && (
+              <button
+                onClick={() => navigate(ROUTES.HOME)}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                  currentPage === ROUTES.HOME
+                    ? 'bg-blue-700 text-white shadow-md'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                <span>📦 {t('navigation.browse')}</span>
+              </button>
+            )}
 
-            {/* Other Navigation Items */}
-            {navigation.filter(item => item.guest || isLoggedIn).map((item) => {
+            {/* Organizations - Hide for admins */}
+            {!isAdminUser() && (
+              <button
+                onClick={() => navigate(ROUTES.ORGANIZATIONS)}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                  currentPage === ROUTES.ORGANIZATIONS
+                    ? 'bg-green-700 text-white shadow-md'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
+              >
+                <span>🏢 Organizations</span>
+              </button>
+            )}
 
-              return (
-                <button
-                  key={`${item.page}-${item.name}`}
-                  onClick={() => setCurrentPage(item.page)}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
-                    currentPage === item.page
-                      ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600'
-                      : `${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'}`
-                  }`}
-                >
-                  
-                  <span className="truncate">{item.name}</span>
-                </button>
-              );
-            })}
-
-            {/* Admin Navigation */}
-            {adminNavigation.filter(item => item.guest || isLoggedIn).map((item) => {
-
-              return (
-                <button
-                  key={`admin-${item.page}-${item.name}`}
-                  onClick={() => setCurrentPage(item.page)}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
-                    currentPage === item.page
-                      ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600'
-                      : `${darkMode ? 'text-gray-300 hover:text-white hover:bg-purple-700' : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'}`
-                  }`}
-                >
-                  
-                  <span className="truncate">{item.name}</span>
-                </button>
-              );
-            })}
+            {/* Dynamic Dashboard Button - Only when logged in */}
+            {dashboardButton && (
+              <button
+                onClick={() => navigate(dashboardButton.route)}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                  currentPage === dashboardButton.route
+                    ? dashboardButton.color === 'blue'
+                      ? 'bg-blue-700 text-white shadow-md'
+                      : 'bg-purple-700 text-white shadow-md'
+                    : dashboardButton.color === 'blue'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                <span>{dashboardButton.icon} {dashboardButton.name}</span>
+              </button>
+            )}
           </nav>
 
           {/* User Menu */}
@@ -215,7 +186,7 @@ const ModernHeader = ({
               <div className="flex items-center space-x-3">
                 {/* Add Item Button */}
                 <button
-                  onClick={() => setCurrentPage('add-item')}
+                  onClick={() => navigate(ROUTES.ADD_ITEM)}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   
@@ -247,7 +218,7 @@ const ModernHeader = ({
                 
                 {/* Dark Mode Toggle */}
                 <button
-                  onClick={() => setDarkMode(!darkMode)}
+                  onClick={toggleDarkMode}
                   className={`p-2 rounded-lg transition-colors ${
                     darkMode 
                       ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
@@ -262,14 +233,18 @@ const ModernHeader = ({
             ) : (
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setCurrentPage('login')}
-                  className={`text-sm font-medium ${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} transition-colors`}
+                  onClick={() => navigate(ROUTES.LOGIN)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-700 border border-gray-600' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-300'
+                  }`}
                 >
                   {t('navigation.login')}
                 </button>
                 <button
-                  onClick={() => setCurrentPage('login')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                  onClick={() => navigate(ROUTES.LOGIN)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
                 >
                   {t('navigation.getStarted')}
                 </button>
@@ -279,7 +254,7 @@ const ModernHeader = ({
                 
                 {/* Dark Mode Toggle */}
                 <button
-                  onClick={() => setDarkMode(!darkMode)}
+                  onClick={toggleDarkMode}
                   className={`p-2 rounded-lg transition-colors ${
                     darkMode 
                       ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
@@ -292,21 +267,6 @@ const ModernHeader = ({
                 </button>
               </div>
             )}
-
-            {/* Mobile Organizations Button */}
-            <button
-              onClick={() => setCurrentPage('organizations')}
-              className={`md:hidden p-2 rounded-lg transition-colors ${
-                currentPage === 'organizations'
-                  ? 'bg-green-600 text-white'
-                  : darkMode 
-                    ? 'text-gray-300 hover:text-white hover:bg-green-600' 
-                    : 'text-gray-600 hover:text-white hover:bg-green-600'
-              }`}
-              title="Organizations"
-            >
-              
-            </button>
 
             {/* Mobile menu button */}
             <button
@@ -323,70 +283,64 @@ const ModernHeader = ({
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Simplified */}
       {mobileMenuOpen && (
         <div className={`md:hidden border-t ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}>
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {/* Prominent Organizations Button for Mobile */}
-            <button
-              onClick={() => {
-                setCurrentPage('organizations');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center px-4 py-3 text-lg font-bold rounded-lg mb-3 ${
-                currentPage === 'organizations'
-                  ? 'bg-green-600 text-white shadow-lg'
-                  : darkMode 
-                    ? 'bg-gray-700 text-green-400 hover:bg-green-600 hover:text-white border border-green-500' 
-                    : 'bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-300'
-              }`}
-            >
-              ORGANIZATIONS
-            </button>
+          <div className="px-2 pt-2 pb-3 space-y-2">
+            {/* Browse Items - Hide for admins */}
+            {!isAdminUser() && (
+              <button
+                onClick={() => {
+                  navigate(ROUTES.HOME);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center px-4 py-2 text-base font-medium rounded-lg shadow-sm ${
+                  currentPage === ROUTES.HOME
+                    ? 'bg-blue-700 text-white shadow-md'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                📦 {t('navigation.browse')}
+              </button>
+            )}
 
-            {/* Other Navigation Items */}
-            {navigation.filter(item => item.guest || isLoggedIn).map((item) => {
+            {/* Organizations - Hide for admins */}
+            {!isAdminUser() && (
+              <button
+                onClick={() => {
+                  navigate(ROUTES.ORGANIZATIONS);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center px-4 py-2 text-base font-medium rounded-lg shadow-sm ${
+                  currentPage === ROUTES.ORGANIZATIONS
+                    ? 'bg-green-700 text-white shadow-md'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
+              >
+                🏢 Organizations
+              </button>
+            )}
 
-              return (
-                <button
-                  key={`mobile-${item.page}-${item.name}`}
-                  onClick={() => {
-                    setCurrentPage(item.page);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center px-3 py-2 text-base font-medium rounded-md ${
-                    currentPage === item.page
-                      ? 'bg-blue-50 text-blue-700'
-                      : `${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'}`
-                  }`}
-                >
-                  
-                  {item.name}
-                </button>
-              );
-            })}
-
-            {/* Admin Navigation for Mobile */}
-            {adminNavigation.filter(item => item.guest || isLoggedIn).map((item) => {
-
-              return (
-                <button
-                  key={`mobile-admin-${item.page}-${item.name}`}
-                  onClick={() => {
-                    setCurrentPage(item.page);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center px-3 py-2 text-base font-medium rounded-md ${
-                    currentPage === item.page
-                      ? 'bg-purple-50 text-purple-700'
-                      : `${darkMode ? 'text-gray-300 hover:text-white hover:bg-purple-700' : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'}`
-                  }`}
-                >
-                  
-                  {item.name}
-                </button>
-              );
-            })}
+            {/* Dynamic Dashboard Button */}
+            {dashboardButton && (
+              <button
+                onClick={() => {
+                  navigate(dashboardButton.route);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center px-4 py-2 text-base font-medium rounded-lg shadow-sm ${
+                  currentPage === dashboardButton.route
+                    ? dashboardButton.color === 'blue'
+                      ? 'bg-blue-700 text-white shadow-md'
+                      : 'bg-purple-700 text-white shadow-md'
+                    : dashboardButton.color === 'blue'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {dashboardButton.icon} {dashboardButton.name}
+              </button>
+            )}
             
             {/* Mobile Language Selector & Dark Mode */}
             <div className={`px-3 py-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} mt-2 pt-4`}>
@@ -402,7 +356,7 @@ const ModernHeader = ({
                   {darkMode ? t('theme.darkMode') : t('theme.lightMode')}
                 </span>
                 <button
-                  onClick={() => setDarkMode(!darkMode)}
+                  onClick={toggleDarkMode}
                   className={`p-2 rounded-lg transition-colors ${
                     darkMode 
                       ? 'text-gray-300 hover:text-white hover:bg-gray-700' 

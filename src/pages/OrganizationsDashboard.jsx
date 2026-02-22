@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../contexts/AppContext';
 import { 
   Search, 
   Building2, 
@@ -14,14 +16,10 @@ import {
   List
 } from 'lucide-react';
 
-const OrganizationsDashboard = ({ 
-  currentUser, 
-  isLoggedIn, 
-  setCurrentPage, 
-  darkMode,
-  onSelectOrganization 
-}) => {
+const OrganizationsDashboard = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isLoggedIn, darkMode } = useApp();
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -294,10 +292,7 @@ const OrganizationsDashboard = ({
 
   const handleOrganizationClick = (organization) => {
     console.log('🏢 Organization clicked:', organization);
-    if (onSelectOrganization) {
-      onSelectOrganization(organization);
-    }
-    setCurrentPage('organization-detail');
+    navigate(`/organizations/${organization.id}`);
   };
 
   if (loading) {
@@ -328,7 +323,7 @@ const OrganizationsDashboard = ({
             
             {isLoggedIn && (
               <button
-                onClick={() => setCurrentPage('public-sector-registration')}
+                onClick={() => navigate('/register-organization')}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 
@@ -525,7 +520,6 @@ const OrganizationsDashboard = ({
 
 // Organization Card Component
 const OrganizationCard = ({ organization, viewMode, darkMode, organizationTypes, onClick, t }) => {
-  const typeInfo = organizationTypes[organization.type] || organizationTypes.other;
 
   if (viewMode === 'list') {
     return (

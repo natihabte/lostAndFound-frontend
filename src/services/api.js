@@ -7,10 +7,24 @@ export const getAuthToken = () => {
 };
 
 // Handle API response
-export const handleResponse = async (response) => {
+export const handleResponse = async (response, options = {}) => {
+  const { isPublicEndpoint = false } = options;
   const data = await response.json();
   
   if (!response.ok) {
+    // Only clear tokens for authenticated endpoints that return 401
+    // Don't clear tokens for public endpoints
+    if (!isPublicEndpoint && (data.clearToken || response.status === 401)) {
+      authHelpers.removeToken();
+      authHelpers.removeUser();
+      
+      // If on a protected page, redirect to login
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        // Store the current path to redirect back after login
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      }
+    }
+    
     throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
   }
   
@@ -35,16 +49,50 @@ const createHeaders = (includeAuth = true) => {
 
 // Authentication helpers
 export const authHelpers = {
-  saveToken: (token) => localStorage.setItem('token', token),
+  saveToken: (token) => {
+    // Validate token before saving
+    if (token && token !== 'null' && token !== 'undefined' && token.length > 20) {
+      localStorage.setItem('token', token);
+    } else {
+      console.error('Invalid token format, not saving');
+    }
+  },
   removeToken: () => localStorage.removeItem('token'),
-  getToken: () => localStorage.getItem('token'),
+  getToken: () => {
+    const token = localStorage.getItem('token');
+    // Validate token format
+    if (token && token !== 'null' && token !== 'undefined' && token.length > 20) {
+      return token;
+    }
+    // Clear invalid token
+    if (token) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    return null;
+  },
   saveUser: (user) => localStorage.setItem('user', JSON.stringify(user)),
   removeUser: () => localStorage.removeItem('user'),
   getUser: () => {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
-  isAuthenticated: () => !!localStorage.getItem('token')
+  isAuthenticated: () => {
+    const token = authHelpers.getToken();
+    return !!token;
+  },
+  clearAuth: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  },
+  validateAndRefreshAuth: async () => {
+    const token = authHelpers.getToken();
+    if (!token) {
+      authHelpers.clearAuth();
+      return false;
+    }
+    return true;
+  }
 };
 
 // Authentication API
@@ -308,11 +356,25 @@ export const usersAPI = {
   },
 
   updateProfile: async (profileData) => {
-    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+    // Verify token exists before making request
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication required. Please login again.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
       method: 'PUT',
       headers: createHeaders(),
       body: JSON.stringify(profileData)
     });
+    
+    // Handle 401 specifically
+    if (response.status === 401) {
+      // Clear invalid token
+      authHelpers.removeToken();
+      authHelpers.removeUser();
+      throw new Error('Your session has expired. Please login again.');
+    }
     
     return handleResponse(response);
   },
@@ -373,13 +435,18 @@ export const uploadAPI = {
 export const organizationsAPI = {
   getAll: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const url = queryString ? `${API_BASE_URL}/organizations?${queryString}` : `${API_BASE_URL}/organizations`;
+    const url = queryString ? `${API_BASE_URL}/organizations/public?${queryString}` : `${API_BASE_URL}/organizations/public`;
+    
+    console.log('🔍 OrganizationsAPI.getAll - Making request to:', url);
     
     const response = await fetch(url, {
       headers: createHeaders(false)
     });
     
-    return handleResponse(response);
+    console.log('🔍 OrganizationsAPI.getAll - Response status:', response.status);
+    console.log('🔍 OrganizationsAPI.getAll - Response URL:', response.url);
+    
+    return handleResponse(response, { isPublicEndpoint: true });
   },
 
   get: async (id) => {
@@ -387,6 +454,83 @@ export const organizationsAPI = {
       headers: createHeaders(false)
     });
     
+    return handleResponse(response, { isPublicEndpoint: true });
+  },
+
+  // Admin-only endpoint for managing organizations
+  getAllAdmin: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `${API_BASE_URL}/organizations?${queryString}` : `${API_BASE_URL}/organizations`;
+    
+    const response = await fetch(url, {
+      headers: createHeaders(true)
+    });
+    
+    return handleResponse(response);
+  }
+};
+
+// Organization Admin API
+export const organizationAdminAPI = {
+  create: async (adminData) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/create`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify(adminData)
+    });
+    return handleResponse(response);
+  },
+
+  list: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString 
+      ? `${API_BASE_URL}/organization-admin/list?${queryString}` 
+      : `${API_BASE_URL}/organization-admin/list`;
+    
+    const response = await fetch(url, {
+      headers: createHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  get: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/${id}`, {
+      headers: createHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  update: async (id, adminData) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/${id}`, {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(adminData)
+    });
+    return handleResponse(response);
+  },
+
+  delete: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/${id}`, {
+      method: 'DELETE',
+      headers: createHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  resetPassword: async (id, newPassword) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/${id}/reset-password`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify({ newPassword })
+    });
+    return handleResponse(response);
+  },
+
+  toggleStatus: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/organization-admin/${id}/toggle-status`, {
+      method: 'POST',
+      headers: createHeaders()
+    });
     return handleResponse(response);
   }
 };
@@ -418,3 +562,72 @@ export const updateProfile = usersAPI.updateProfile;
 export const getOrganizations = organizationsAPI.getAll;
 export const getOrganization = organizationsAPI.get;
 export const uploadFile = uploadAPI.uploadImage;
+
+// Platform Settings API
+export const platformSettingsAPI = {
+  get: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/platform-settings`, {
+      method: 'GET',
+      headers: createHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  update: async (settings) => {
+    const response = await fetch(`${API_BASE_URL}/admin/platform-settings`, {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(settings)
+    });
+    return handleResponse(response);
+  },
+
+  getPublic: async () => {
+    // Add cache-busting timestamp
+    const timestamp = new Date().getTime();
+    const response = await fetch(`${API_BASE_URL}/admin/platform-settings/public?_=${timestamp}`, {
+      method: 'GET',
+      headers: createHeaders(false),
+      cache: 'no-store' // Prevent caching
+    });
+    return handleResponse(response, { isPublicEndpoint: true });
+  }
+};
+
+// Admin Settings API
+export const adminSettingsAPI = {
+  updateProfile: async (profileData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/profile`, {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(profileData)
+    });
+    return handleResponse(response);
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const response = await fetch(`${API_BASE_URL}/admin/password`, {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    return handleResponse(response);
+  },
+
+  getSystemSettings: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/system-settings`, {
+      method: 'GET',
+      headers: createHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  updateSystemSettings: async (settings) => {
+    const response = await fetch(`${API_BASE_URL}/admin/system-settings`, {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(settings)
+    });
+    return handleResponse(response);
+  }
+};

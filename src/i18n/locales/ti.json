@@ -14,7 +14,9 @@
     "logout": "ውጻእ",
     "addItem": "ነገር ወስኽ",
     "getStarted": "ጀምር",
-    "loginRequired": "መእተዊ የድሊ"
+    "loginRequired": "መእተዊ የድሊ",
+    "back": "ተመለስ",
+    "goBack": "ተመለስ"
   },
   "search": {
     "placeholder": "ብርእሲ ወይ መግለጺ ድለ...",

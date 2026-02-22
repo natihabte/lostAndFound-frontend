@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../../contexts/AppContext';
 import { Shield, Mail, Lock, Eye, EyeOff, LogIn, ArrowLeft } from 'lucide-react';
 
-const AdminLogin = ({ onAdminLogin, setCurrentPage, darkMode }) => {
+const AdminLogin = ({ onAdminLogin, setCurrentPage }) => {
   const { t } = useTranslation();
+  const { darkMode } = useApp();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,19 +20,69 @@ const AdminLogin = ({ onAdminLogin, setCurrentPage, darkMode }) => {
     setError('');
 
     try {
-      // Admin login logic
-      if (formData.email === 'admin@platform.com' && formData.password === 'admin123') {
-        const adminUser = {
-          id: 'admin-1',
-          name: 'System Administrator',
-          email: 'admin@platform.com',
-          role: 'admin'
-        };
-        onAdminLogin('admin', adminUser);
-      } else {
-        setError('Invalid admin credentials');
+      // Import API helpers
+      const { authHelpers, authAPI } = await import('../../services/api');
+      
+      // Try real backend authentication first
+      try {
+        console.log('🔐 Attempting backend authentication...');
+        const response = await authAPI.login(formData.email, formData.password);
+        
+        if (response.success && response.token) {
+          console.log('✅ Backend authentication successful');
+          
+          // Validate user has admin role
+          const adminRoles = ['superAdmin', 'admin'];
+          if (!adminRoles.includes(response.user.role)) {
+            setError('Access denied. Admin privileges required.');
+            setLoading(false);
+            return;
+          }
+          
+          // Save real auth data
+          authHelpers.saveToken(response.token);
+          authHelpers.saveUser(response.user);
+          
+          console.log('✅ Token saved:', response.token.substring(0, 20) + '...');
+          console.log('✅ User saved:', response.user);
+          
+          // Call the parent handler
+          onAdminLogin(response.user.role, response.user);
+          return;
+        }
+      } catch (backendError) {
+        console.warn('⚠️ Backend authentication failed:', backendError.message);
+        
+        // If backend fails, try demo credentials
+        if (formData.email === 'admin@platform.com' && formData.password === 'admin123') {
+          console.log('✅ Using demo credentials (backend unavailable)');
+          const demoUser = {
+            _id: 'demo-admin-1',
+            id: 'demo-admin-1',
+            name: 'Demo Administrator',
+            email: 'admin@platform.com',
+            role: 'admin',
+            isVerified: true
+          };
+          
+          // Create a properly formatted demo token (still won't work with backend, but won't cause format errors)
+          const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRlbW8tYWRtaW4tMSIsImlhdCI6' + Date.now() + '.demo-signature';
+          
+          // Save demo auth data
+          authHelpers.saveToken(demoToken);
+          authHelpers.saveUser(demoUser);
+          
+          console.log('✅ Demo token saved (backend unavailable mode)');
+          console.log('✅ Demo user saved:', demoUser);
+          
+          // Call the parent handler
+          onAdminLogin(demoUser.role, demoUser);
+        } else {
+          setError('Invalid credentials. Backend is unavailable - use demo credentials: admin@platform.com / admin123');
+        }
       }
     } catch (err) {
+      console.error('Admin login error:', err);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -122,16 +174,6 @@ const AdminLogin = ({ onAdminLogin, setCurrentPage, darkMode }) => {
               {loading ? t('auth.loading') : t('admin.login.signIn')}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setCurrentPage('landing')}
-              className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} hover:underline`}
-            >
-              {t('navigation.backToHome')}
-            </button>
-          </div>
-
           {/* Demo Credentials */}
           <div className={`mt-6 p-4 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border rounded-lg`}>
             <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2 font-semibold`}>
@@ -139,7 +181,9 @@ const AdminLogin = ({ onAdminLogin, setCurrentPage, darkMode }) => {
             </p>
             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               Email: admin@platform.com<br />
-              Password: admin123
+              Password: admin123<br />
+              <br />
+              <span className="text-yellow-600">Note: These are demo credentials. For production, use your database admin account.</span>
             </p>
           </div>
         </div>

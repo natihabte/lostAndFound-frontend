@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-const AdminClaimRequests = ({ claims = [], items = [], users = [], darkMode, onApproveClaim, onRejectClaim }) => {
+import { useApp } from '../../contexts/AppContext';
+
+const AdminClaimRequests = () => {
   const { t } = useTranslation();
+  const { darkMode } = useApp();
+  const [claims, setClaims] = useState([]);
+  const [items, setItems] = useState([]);
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedClaim, setSelectedClaim] = useState(null);

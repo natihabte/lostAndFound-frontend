@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../../contexts/AppContext';
 import { Search, Eye, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
-const AdminPosts = ({ items = [], darkMode, onUpdateItem, onDeleteItem, onApproveItem, onRejectItem }) => {
+const AdminPosts = () => {
   const { t } = useTranslation();
+  const { darkMode } = useApp();
+  const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');

@@ -15,7 +15,9 @@
     "logout": "Sign Out",
     "addItem": "Post Item",
     "getStarted": "Get Started",
-    "loginRequired": "Login Required"
+    "loginRequired": "Login Required",
+    "back": "Back",
+    "goBack": "Go Back"
   },
   "search": {
     "placeholder": "Search by title or description...",

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useApp } from '../../contexts/AppContext';
 
-const AdminOrders = ({ darkMode = false, currentUser }) => {
+const AdminOrders = () => {
+  const { darkMode, currentUser } = useApp();
   // State management
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

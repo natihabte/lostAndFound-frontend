@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-const SuperAdminDashboard = ({ darkMode, currentUser }) => {
+import { useApp } from '../../contexts/AppContext';
+
+const SuperAdminDashboard = () => {
   const { t } = useTranslation();
+  const { darkMode, currentUser } = useApp();
   const [stats, setStats] = useState({});
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);

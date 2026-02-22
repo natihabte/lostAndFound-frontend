@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../contexts/AppContext';
 import { Package, Award, TrendingUp, Plus, Edit, Trash2, Eye, AlertCircle, CheckCircle } from 'lucide-react';
 import { NoPosts, WelcomeMessage } from '../components/EmptyStates';
+import { ROUTES } from '../constants/routes';
 
-const UserDashboardPage = ({ 
-  currentUser, 
-  userItems, 
-  userClaims, 
-  onEditItem, 
-  onDeleteItem, 
-  onCreatePost,
-  setCurrentPage,
-  darkMode
-}) => {
+const UserDashboardPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { currentUser, darkMode, items, userRole } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Check if user is admin
+  const isAdmin = userRole === 'superAdmin' || userRole === 'admin';
+  
+  // Filter items for current user
+  const userItems = items.filter(item => {
+    const ownerId = item.owner?._id || item.owner || item.userId;
+    const currentUserId = currentUser?._id || currentUser?.id;
+    return ownerId === currentUserId;
+  });
+  
+  const userClaims = []; // TODO: Implement claims fetching
 
   const stats = {
     totalPosts: userItems?.length || 0,
@@ -37,7 +45,7 @@ const UserDashboardPage = ({
       {stats.totalPosts === 0 && (
         <WelcomeMessage 
           userName={currentUser?.name?.split(' ')[0] || 'there'}
-          onGetStarted={onCreatePost}
+          onGetStarted={() => navigate(ROUTES.ADD_ITEM)}
           darkMode={darkMode}
         />
       )}
@@ -112,18 +120,18 @@ const UserDashboardPage = ({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Dashboard</h1>
-            <p className="text-gray-600">Manage your posts and track your activity</p>
+            <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>My Dashboard</h1>
+            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Manage your posts and track your activity</p>
           </div>
           
           {/* Settings Button */}
           <button
-            onClick={() => setCurrentPage('user-settings')}
+            onClick={() => navigate(isAdmin ? '/admin/user-settings' : ROUTES.USER_SETTINGS)}
             className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
             
@@ -192,7 +200,7 @@ const UserDashboardPage = ({
                 My Posts ({stats.totalPosts})
               </h3>
               <button
-                onClick={onCreatePost}
+                onClick={() => navigate(ROUTES.ADD_ITEM)}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <Plus className="h-5 w-5 mr-2" />
@@ -235,7 +243,7 @@ const UserDashboardPage = ({
                       <div className="flex items-center justify-between">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => onEditItem && onEditItem(item)}
+                            onClick={() => navigate(`/items/${item._id || item.id}`)}
                             className="p-1 text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Edit item"
                           >
@@ -249,7 +257,18 @@ const UserDashboardPage = ({
                           </button>
                         </div>
                         <button
-                          onClick={() => onDeleteItem && onDeleteItem(item._id)}
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to delete this item?')) {
+                              try {
+                                const { itemsAPI } = await import('../services/api');
+                                await itemsAPI.delete(item._id || item.id);
+                                // Refresh items
+                                window.location.reload();
+                              } catch (error) {
+                                alert('Failed to delete item: ' + error.message);
+                              }
+                            }
+                          }}
                           className="p-1 text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
                           aria-label="Delete item"
                         >
@@ -261,7 +280,7 @@ const UserDashboardPage = ({
                 ))}
               </div>
             ) : (
-              <NoPosts onCreatePost={onCreatePost} />
+              <NoPosts onCreatePost={() => navigate(ROUTES.ADD_ITEM)} />
             )}
           </div>
         )}

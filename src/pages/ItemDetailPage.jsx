@@ -80,10 +80,10 @@ const ItemDetailPage = ({ itemId, items, isLoggedIn, currentUser, onBack, onClai
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading item details...</p>
+          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Loading item details...</p>
         </div>
       </div>
     );
@@ -91,11 +91,11 @@ const ItemDetailPage = ({ itemId, items, isLoggedIn, currentUser, onBack, onClai
 
   if (!item) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center p-4`}>
         <div className="text-center">
           
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Item Not Found</h2>
-          <p className="text-gray-600 mb-6">The item you're looking for doesn't exist or has been removed.</p>
+          <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Item Not Found</h2>
+          <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>The item you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={onBack}
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
@@ -109,12 +109,12 @@ const ItemDetailPage = ({ itemId, items, isLoggedIn, currentUser, onBack, onClai
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 py-1"
+          className={`inline-flex items-center mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 py-1 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Browse

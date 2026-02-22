@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Edit, Trash2, UserPlus, Shield, Ban, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../../contexts/AppContext';
+import { Search, Edit, Trash2, UserPlus, Shield, Ban, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ROUTES } from '../../constants/routes';
 
-const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreateUser }) => {
+const AdminUsers = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { darkMode } = useApp();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -12,6 +19,66 @@ const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreate
   const [editingUser, setEditingUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  // Fetch users from API
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const { usersAPI } = await import('../../services/api');
+      const response = await usersAPI.getAllUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      // Use mock data if API fails
+      setUsers([
+        { _id: '1', name: 'John Doe', email: 'john@example.com', role: 'user', status: 'active', createdAt: new Date() },
+        { _id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'orgAdmin', status: 'active', createdAt: new Date() },
+        { _id: '3', name: 'Admin User', email: 'admin@example.com', role: 'hallAdmin', status: 'active', createdAt: new Date() }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateUser = async (userId, userData) => {
+    try {
+      const { usersAPI } = await import('../../services/api');
+      await usersAPI.updateUser(userId, userData);
+      fetchUsers();
+      alert('User updated successfully!');
+    } catch (error) {
+      alert(error.message || 'Failed to update user');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const { usersAPI } = await import('../../services/api');
+        await usersAPI.deleteUser(userId);
+        fetchUsers();
+        alert('User deleted successfully!');
+      } catch (error) {
+        alert(error.message || 'Failed to delete user');
+      }
+    }
+  };
+
+  const handleCreateUser = async (userData) => {
+    try {
+      const { usersAPI } = await import('../../services/api');
+      await usersAPI.createUser(userData);
+      fetchUsers();
+      setShowCreateModal(false);
+      alert('User created successfully!');
+    } catch (error) {
+      alert(error.message || 'Failed to create user');
+    }
+  };
 
   // Filter users based on search and filters
   const filteredUsers = users.filter(user => {
@@ -200,18 +267,35 @@ const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreate
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Header with Back Button */}
         <div className="mb-8">
+          <button
+            onClick={() => navigate(ROUTES.ADMIN)}
+            className={`flex items-center ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} mb-4 transition-colors`}
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Dashboard
+          </button>
           <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
-            {t('admin.users.title')}
+            User Management
           </h1>
           <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            {t('admin.users.subtitle')}
+            Manage all platform users, roles, and permissions
           </p>
         </div>
 
-        {/* Controls */}
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-6 mb-6`}>
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading users...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Controls */}
+            <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-6 mb-6`}>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               {/* Search */}
@@ -489,6 +573,8 @@ const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreate
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* Create/Edit User Modal */}
@@ -501,9 +587,9 @@ const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreate
           }}
           onSave={(userData) => {
             if (editingUser) {
-              onUpdateUser?.(editingUser._id || editingUser.id, userData);
+              handleUpdateUser(editingUser._id || editingUser.id, userData);
             } else {
-              onCreateUser?.(userData);
+              handleCreateUser(userData);
             }
           }}
         />
@@ -535,7 +621,7 @@ const AdminUsers = ({ users = [], darkMode, onUpdateUser, onDeleteUser, onCreate
               </button>
               <button
                 onClick={() => {
-                  onDeleteUser?.(userToDelete._id || userToDelete.id);
+                  handleDeleteUser(userToDelete._id || userToDelete.id);
                   setShowDeleteModal(false);
                   setUserToDelete(null);
                 }}

@@ -1,25 +1,26 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../contexts/AppContext';
+import { ROUTES } from '../constants/routes';
 import { Shield, Zap, Users, Globe, TrendingUp, Award, Heart, Star, Package, AlertCircle, CheckCircle } from 'lucide-react';
 import ModernSearchBar from './ModernSearchBar';
 import ModernItemCard from './ModernItemCard';
 
 const ModernLandingPage = ({ 
-  items, 
-  searchTerm, 
-  setSearchTerm, 
-  selectedCategory, 
-  setSelectedCategory,
-  selectedStatus,
-  setSelectedStatus,
-  setCurrentPage,
-  isLoggedIn,
-  userRole,
-  darkMode,
-  onViewDetails,
-  onClaimItem,
-  onContactOwner
+  items = [],  // Default to empty array
+  searchTerm = '', 
+  setSearchTerm = () => {}, 
+  selectedCategory = 'all', 
+  setSelectedCategory = () => {},
+  selectedStatus = 'all',
+  setSelectedStatus = () => {},
+  onViewDetails = () => {},
+  onClaimItem = () => {},
+  onContactOwner = () => {}
 }) => {
+  const navigate = useNavigate();
+  const { isLoggedIn, userRole, darkMode } = useApp();
   const { t, i18n } = useTranslation();
   const stats = {
     totalItems: items.length,
@@ -31,17 +32,14 @@ const ModernLandingPage = ({
   const categories = ['electronic', 'clothing', 'accessory', 'document', 'book', 'other'];
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       
       {/* ADMIN SETTINGS BUTTON - ONLY FOR ADMINS */}
       {userRole === 'admin' && (
         <div className="bg-red-600 text-white py-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <button
-              onClick={() => {
-                alert('🔧 ADMIN DETECTED! Going to Admin Settings...');
-                setCurrentPage('admin-settings');
-              }}
+              onClick={() => navigate(ROUTES.ADMIN_SETTINGS)}
               className="bg-white text-red-600 px-8 py-4 rounded-xl text-xl font-bold hover:bg-gray-100 transition-colors shadow-lg"
             >
               ADMIN SETTINGS - CLICK HERE
@@ -52,7 +50,7 @@ const ModernLandingPage = ({
       )}
       
       {/* Hero Section */}
-      <section className={`${darkMode ? 'bg-gradient-to-br from-gray-800 via-gray-900 to-black' : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'} text-white`} aria-labelledby="hero-title">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-gray-800 dark:via-gray-900 dark:to-black text-white" aria-labelledby="hero-title">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="flex justify-center mb-6">
@@ -118,7 +116,7 @@ const ModernLandingPage = ({
               {t('actions.lostDescription')}
             </p>
             <button
-              onClick={() => isLoggedIn ? setCurrentPage('add-item') : setCurrentPage('login')}
+              onClick={() => isLoggedIn ? navigate(ROUTES.ADD_ITEM) : navigate(ROUTES.LOGIN)}
               className="w-full bg-red-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center"
             >
               {t('items.reportLost')}
@@ -137,7 +135,7 @@ const ModernLandingPage = ({
               {t('actions.foundDescription')}
             </p>
             <button
-              onClick={() => isLoggedIn ? setCurrentPage('add-item') : setCurrentPage('login')}
+              onClick={() => isLoggedIn ? navigate(ROUTES.ADD_ITEM) : navigate(ROUTES.LOGIN)}
               className="w-full bg-green-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
             >
               {t('items.reportFound')}
@@ -162,7 +160,7 @@ const ModernLandingPage = ({
                 key={category}
                 onClick={() => {
                   setSelectedCategory(category);
-                  setCurrentPage('home');
+                  navigate(ROUTES.HOME);
                 }}
                 className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:shadow-md'} rounded-xl p-6 shadow-sm transition-all text-center group`}
               >
@@ -183,7 +181,7 @@ const ModernLandingPage = ({
             <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pages.latestItems')}</p>
           </div>
           <button
-            onClick={() => setCurrentPage('home')}
+            onClick={() => navigate(ROUTES.HOME)}
             className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} font-medium flex items-center transition-colors`}
           >
             {t('pages.viewAllItems')}
@@ -274,7 +272,7 @@ const ModernLandingPage = ({
             </div>
           </div>
           <button
-            onClick={() => setCurrentPage('public-sector-registration')}
+            onClick={() => navigate(ROUTES.PUBLIC_SECTOR_REGISTRATION)}
             className={`${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-green-600 hover:bg-gray-100'} px-8 py-4 rounded-xl font-bold text-lg transition-colors shadow-lg flex items-center justify-center mx-auto`}
           >
             
@@ -297,20 +295,20 @@ const ModernLandingPage = ({
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => setCurrentPage('login')}
+                onClick={() => navigate(ROUTES.LOGIN)}
                 className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white px-8 py-3 rounded-xl font-medium transition-colors`}
               >
                 {t('auth.signUp')}
               </button>
               <button
-                onClick={() => setCurrentPage('public-sector-registration')}
+                onClick={() => navigate(ROUTES.PUBLIC_SECTOR_REGISTRATION)}
                 className={`${darkMode ? 'bg-green-700 hover:bg-green-600' : 'bg-green-600 hover:bg-green-700'} text-white px-8 py-3 rounded-xl font-medium transition-colors flex items-center justify-center`}
               >
                 
                 {t('organization.cta.registerOrganization')}
               </button>
               <button
-                onClick={() => setCurrentPage('login')}
+                onClick={() => navigate(ROUTES.LOGIN)}
                 className={`border ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-600 hover:bg-gray-800'} text-white px-8 py-3 rounded-xl font-medium transition-colors`}
               >
                 {t('navigation.login')}
