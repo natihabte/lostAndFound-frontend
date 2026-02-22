@@ -10,30 +10,9 @@ import { platformSettingsAPI } from '../services/api';
 const ModernHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoggedIn, userRole, currentUser, handleLogout, darkMode, toggleDarkMode } = useApp();
+  const { isLoggedIn, userRole, currentUser, handleLogout, darkMode, toggleDarkMode, platformSupport } = useApp();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [platformSupport, setPlatformSupport] = React.useState({
-    enabled: true,
-    phoneNumber: '+1-800-555-0123',
-    is24x7: true
-  });
-
-  // Load platform support settings
-  React.useEffect(() => {
-    const loadPlatformSettings = async () => {
-      try {
-        const response = await platformSettingsAPI.getPublic();
-        if (response.success && response.data) {
-          setPlatformSupport(response.data);
-        }
-      } catch (error) {
-        // Silently fail - use default values
-        console.error('Failed to load platform settings:', error);
-      }
-    };
-    loadPlatformSettings();
-  }, []);
 
   // DEBUG: Log the props being received
   React.useEffect(() => {
@@ -93,8 +72,8 @@ const ModernHeader = () => {
 
   return (
     <header className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} shadow-sm border-b fixed top-0 left-0 right-0 z-50 transition-colors`}>
-      {/* Platform Banner - Hide for superAdmin */}
-      {platformSupport.enabled && !isAdminUser() && (
+      {/* Platform Banner - Hide only for superAdmin */}
+      {platformSupport.enabled && userRole !== 'superAdmin' && (
         <div className="bg-blue-600 text-white py-2">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between text-sm">

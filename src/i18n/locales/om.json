@@ -259,8 +259,9 @@
     "supportDescription": "Deeggarsi ogummaa fi nageenya sa'aatii 24 naannoo keessatti ni argama."
   },
   "contact": {
-    "platformSupport": "Deeggarsa Waltajjii: +1-800-555-0123",
+    "platformSupport": "Deeggarsa Waltajjii",
     "service24x7": "Tajaajila 24/7",
+    "businessHours": "Sa'aatii Hojii",
     "readyToStart": "Jalqabuuf qophaa'aa?",
     "joinThousands": "Kumaatama dhaabbilee waltajjii keenya amanamaa fayyadaman waliin makamaa"
   },

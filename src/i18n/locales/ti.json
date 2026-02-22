@@ -259,8 +259,9 @@
     "supportDescription": "ሙያዊ ደገፍን ውሕስነትን ኣብ ዙሪያ ሰዓት ይርከብ።"
   },
   "contact": {
-    "platformSupport": "ደገፍ መድረኽ: +1-800-555-0123",
+    "platformSupport": "ደገፍ መድረኽ",
     "service24x7": "24/7 አገልግሎት",
+    "businessHours": "ሰዓታት ስራሕ",
     "readyToStart": "ንምጅማር ድሉው ዲኻ?",
     "joinThousands": "ዝተኣመነ መድረኽና ዝጥቀሙ ብኣሽሓት ዝቑጸሩ ትካላትን ተጸንበር"
   },

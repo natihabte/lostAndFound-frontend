@@ -204,8 +204,9 @@
     "supportDescription": "Professional support and security available around the clock."
   },
   "contact": {
-    "platformSupport": "Platform Support: +1-800-555-0123",
+    "platformSupport": "Platform Support",
     "service24x7": "24/7 Service",
+    "businessHours": "Business Hours",
     "readyToStart": "Ready to Get Started?",
     "joinThousands": "Join thousands of organizations using our trusted platform"
   },

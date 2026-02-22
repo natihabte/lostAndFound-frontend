@@ -22,6 +22,28 @@ export const AppProvider = ({ children }) => {
     return saved === 'true';
   });
   const [loading, setLoading] = useState(false);
+  const [platformSupport, setPlatformSupport] = useState({
+    enabled: true,
+    phoneNumber: '+1-800-555-0123',
+    is24x7: true
+  });
+
+  // Load platform support settings on mount
+  useEffect(() => {
+    const loadPlatformSettings = async () => {
+      try {
+        const { platformSettingsAPI } = await import('../services/api');
+        const response = await platformSettingsAPI.getPublic();
+        if (response.success && response.data) {
+          setPlatformSupport(response.data);
+        }
+      } catch (error) {
+        // Silently fail - use default values
+        console.error('Failed to load platform settings:', error);
+      }
+    };
+    loadPlatformSettings();
+  }, []);
 
   // Check authentication on mount
   useEffect(() => {
@@ -134,6 +156,8 @@ export const AppProvider = ({ children }) => {
     toggleDarkMode,
     loading,
     setLoading,
+    platformSupport,
+    setPlatformSupport,
     handleLogin,
     handleLogout,
     handleUpdateProfile

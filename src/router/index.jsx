@@ -44,39 +44,19 @@ const TermsOfService = React.lazy(() => import('../components/TermsOfService'));
 // Smart Home Component - Shows Landing or User Dashboard based on auth status
 const SmartHome = () => {
   const { isLoggedIn } = useApp();
-  const user = authHelpers.getUser();
   
   // Show user dashboard for logged-in users, landing for guests
   if (isLoggedIn) {
-    // For admin users, render with AdminLayout (sidebar)
-    if (user?.role === 'superAdmin' || user?.role === 'admin') {
-      return (
-        <AdminLayout>
-          <UserDashboardPage />
-        </AdminLayout>
-      );
-    }
-    // For regular users, show user dashboard (no sidebar)
+    // All logged-in users see user dashboard at /
     return <UserDashboardPage />;
   }
   
   return <LandingPage />;
 };
 
-// Profile Router - Uses AdminLayout for admins, AppLayout for regular users
+// Profile Router - Shows user dashboard
 const ProfileRouter = () => {
-  const user = authHelpers.getUser();
-  
-  if (user?.role === 'superAdmin' || user?.role === 'admin') {
-    // Admin users get the sidebar layout
-    return (
-      <AdminLayout>
-        <UserDashboardPage />
-      </AdminLayout>
-    );
-  }
-  
-  // Regular users get the normal layout
+  // All users see user dashboard at /profile
   return <UserDashboardPage />;
 };
 
@@ -99,8 +79,8 @@ const AdminDashboardRouter = () => {
       // Admin (org admin) sees OrgAdminDashboard  
       return;
     } else {
-      // Regular users shouldn't be here
-      navigate(ROUTES.HOME);
+      // Regular users shouldn't be here - redirect to user dashboard
+      navigate('/');
     }
   }, [user, navigate]);
   
@@ -111,7 +91,7 @@ const AdminDashboardRouter = () => {
     return <OrgAdminDashboard />;
   }
   
-  return <Navigate to={ROUTES.HOME} replace />;
+  return <Navigate to="/" replace />;
 };
 
 // Protected Route Component
@@ -277,24 +257,26 @@ export const router = createBrowserRouter([
         element: <AdminSettings defaultTab="platform" />
       },
       {
-        path: 'profile',
-        element: <UserDashboardPage />
-      },
-      {
         path: 'user-settings',
         element: <UserSettings />
       }
     ]
   },
   
-  // Profile Route - Uses AdminLayout for admins, AppLayout for regular users
+  // Profile Route - Nested under AppLayout for regular users, redirects admins to /admin/profile
   {
     path: ROUTES.PROFILE,
-    element: (
-      <ProtectedRoute>
-        <ProfileRouter />
-      </ProtectedRoute>
-    )
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute>
+            <ProfileRouter />
+          </ProtectedRoute>
+        )
+      }
+    ]
   }
 ]);
 

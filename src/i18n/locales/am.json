@@ -266,8 +266,9 @@
     "supportDescription": "ሙያዊ ድጋፍ እና ደህንነት በሰዓት ዙሪያ ይገኛል።"
   },
   "contact": {
-    "platformSupport": "የመድረክ ድጋፍ: +1-800-555-0123",
+    "platformSupport": "የመድረክ ድጋፍ",
     "service24x7": "24/7 አገልግሎት",
+    "businessHours": "የስራ ሰዓታት",
     "readyToStart": "ለመጀመር ዝግጁ ነዎት?",
     "joinThousands": "የእኛን የታመነ መድረክ የሚጠቀሙ በሺዎች የሚቆጠሩ ድርጅቶች ይቀላቀሉ"
   },

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
+import ModernHeader from '../components/ModernHeader';
 import { 
   Home, 
   Users, 
@@ -11,14 +12,23 @@ import {
   Shield
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes';
+import { useTranslation } from 'react-i18next';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { darkMode, currentUser, userRole } = useApp();
+  const { darkMode, currentUser, userRole, platformSupport } = useApp();
+  const { t } = useTranslation();
   const [expandedSections, setExpandedSections] = useState({
     adminDashboard: true
   });
+  
+  // Check if platform banner should be shown (not for super admin)
+  const showPlatformBanner = userRole !== 'superAdmin';
+  
+  // Calculate header height based on whether banner is shown
+  const headerHeight = showPlatformBanner ? 'top-24' : 'top-16'; // 96px with banner, 64px without
+  const contentPadding = showPlatformBanner ? 'mt-24' : 'mt-16';
 
 useEffect(()=>{
   if (!userRole || !['superAdmin', 'admin'].includes(userRole)) {
@@ -50,7 +60,7 @@ useEffect(()=>{
   const navigationItems = [
     {
       id: 'home',
-      label: 'My Dashboard',
+      label: 'My Profile',
       icon: Home,
       path: '/',
       active: location.pathname === '/' || isActive('/admin/user-settings')
@@ -148,32 +158,17 @@ useEffect(()=>{
     );
   };
 
-
   return (
-    <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Sidebar - positioned below header */}
-      <div className={`w-64 fixed left-0 top-16 bottom-0 z-40 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r flex flex-col overflow-hidden`}>
-        {/* Sidebar Header - Only show when not on My Dashboard */}
-        {location.pathname !== '/' && (
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-3">
-                <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Admin Panel
-                </h2>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {userRole === 'superAdmin' ? 'Super Admin' : 'Admin'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Header - Now shown on admin pages too */}
+      <ModernHeader />
+      
+      <div className="flex">
+        {/* Sidebar - positioned below header */}
+        <div className={`w-64 fixed left-0 ${headerHeight} bottom-0 z-40 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r flex flex-col overflow-hidden`}>
+        {/* Sidebar Header - Only show when not on My Profile */}
         {/* Navigation */}
-        <nav className={`flex-1 p-4 space-y-2 overflow-y-auto ${location.pathname === '/' ? 'pt-6' : ''}`}>
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto pt-6">
           {navigationItems.map(item => renderNavItem(item))}
         </nav>
 
@@ -198,12 +193,61 @@ useEffect(()=>{
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden ml-64 mt-16">
+      <div className={`flex-1 flex flex-col overflow-hidden ml-64 ${contentPadding}`}>
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto">
           {children || <Outlet />}
         </main>
       </div>
+      </div>
+      
+      {/* Footer - Hide for super admin */}
+      {userRole !== 'superAdmin' && (
+        <footer className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t ml-64`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center mb-4">
+                <span className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('app.name')}</span>
+              </div>
+              <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                {t('footer.description')}
+              </p>
+            </div>
+            
+            <div>
+              <h3 className={`font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('footer.quickLinks')}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/home" className={`${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} transition-colors`}>{t('navigation.browse')}</a></li>
+                <li><a href="/items/add" className={`${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} transition-colors`}>{t('footer.postItem')}</a></li>
+                <li><a href="/profile" className={`${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} transition-colors`}>{t('footer.myAccount')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className={`font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('footer.support')}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{t('contact.platformSupport')}</span></li>
+                <li><span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>📞 {platformSupport.phoneNumber}</span></li>
+                <li><span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>🕒 {platformSupport.is24x7 ? t('contact.service24x7') : t('contact.businessHours')}</span></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className={`border-t pt-6 mt-6 text-center ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {t('footer.copyright')} | 
+              <a href="/privacy" className={`ml-1 hover:underline transition-colors ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}>
+                {t('legal.privacyPolicy')}
+              </a> | 
+              <a href="/terms" className={`ml-1 hover:underline transition-colors ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}>
+                {t('legal.termsOfService')}
+              </a>
+            </p>
+          </div>
+        </div>
+      </footer>
+      )}
     </div>
   );
 };
